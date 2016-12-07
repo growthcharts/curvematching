@@ -81,6 +81,22 @@ that the factor level of the target case is unique among all potential
 donors. In that case, the model can still be fit, but prediction will
 fail, and hence no matches will be found.
 }
+\examples{
+library("curvematching")
+data <- datasets::ChickWeight
+data[543, ]
+
+# find matches for observation in row 543 for outcome weight
+m <- calculate_matches(data, Time == 0 & Chick == 48,
+  y_name = "weight", x_name = c("Time", "Diet"))
+
+# row numbers of matched cases
+extract_matches(m)
+
+# data of matched cases
+data[extract_matches(m), ]
+
+}
 \author{
 Stef van Buuren 2016
 }
