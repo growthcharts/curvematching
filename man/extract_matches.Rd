@@ -9,24 +9,24 @@ extract_matches(matches, i_name = names(matches)[[1]],
   c_name = character(0))
 }
 \arguments{
-\item{matches}{An object created by \code{calculate_matches()}. Such an 
+\item{matches}{An object created by \code{calculate_matches()}. Such an
 object has class \code{"match_list"}.}
 
-\item{i_name}{The name of the indvidual for which matches are wanted. 
+\item{i_name}{The name of the indvidual for which matches are wanted.
 If unspecified, it takes the first individual.}
 
 \item{y_name}{The name of the outcome variable. If unspecified, it takes the
 first outcome.}
 
-\item{t_name}{A character vector containing the name of the treatment 
+\item{t_name}{A character vector containing the name of the treatment
 variables.}
 
 \item{c_name}{The name of the category level within the treatment variable.}
 }
 \value{
-The row numbers in 
-\code{data} corresponding to the matched children. The length 
-of the list will be always equal to \code{m} if \code{replace == TRUE}, 
+The row numbers in
+\code{data} corresponding to the matched children. The length
+of the list will be always equal to \code{m} if \code{replace == TRUE},
 but may be shorter if \code{replace == FALSE} if the donors are exhausted. The
 length is zero if no matches can be found.
 }
@@ -37,10 +37,10 @@ Extracts the calcated matches for indexing
 Stef van Buuren 2016
 }
 \references{
-van Buuren, S. (2014). \emph{Curve matching: A data-driven technique to 
-improve individual prediction of childhood growth}. Annals of Nutrition & 
+van Buuren, S. (2014). \emph{Curve matching: A data-driven technique to
+improve individual prediction of childhood growth}. Annals of Nutrition &
 Metabolism, 65(3), 227-233.
-van Buuren, S. (2012). \emph{Flexible imputation of missing data}. 
+van Buuren, S. (2012). \emph{Flexible imputation of missing data}.
 Boca Raton, FL: Chapman & Hall/CRC.
 }
 

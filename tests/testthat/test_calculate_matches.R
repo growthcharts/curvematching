@@ -5,22 +5,21 @@ set.seed(234)
 data <- datasets::ChickWeight
 
 test_that("returns proper length", {
-  expect_equal(length(calculate_matches(data, list(Time = 0), y_name = "sasa")), 0)
-  expect_equal(length(calculate_matches(data, list(Time = 0, Chick = 48), y_name = "weight")), 1)
-  expect_equal(length(calculate_matches(data, list(Time = 0, Diet = 2), y_name = "weight")), 10)
+  expect_equal(length(calculate_matches(data, Time == 0, y_name = "sasa")), 0)
+  expect_equal(length(calculate_matches(data, Time == 0 & Chick == 48, y_name = "weight")), 1)
+  expect_equal(length(calculate_matches(data, Time == 0 & Diet == 2, y_name = "weight")), 10)
 })
 
-test_that("return object of zero length if observation is not found", {
-  expect_equal(length(z <- calculate_matches(ChickWeight,
-                                             list(Time = 0, Chick = 2, Diet = 2),
-                                             y_name = "weight")),
-               0)
+test_that("warns if no targets are found", {
+  expect_warning(length(z <- calculate_matches(data,
+                                             Time == 0 & Chick == 2 & Diet == 2,
+                                             y_name = "weight")))
 })
 
 context("extract_matches()")
 set.seed(234)
-z <- calculate_matches(data, list(Time = 0, Chick = 48),
-                       y_name = c("weight","Time"), t_name = "Diet")
+z <- calculate_matches(data, Time == 0 & Chick == 48,
+                       y_name = c("weight", "Time"), t_name = "Diet")
 test_that("returns vector of 10 row indices", {
   expect_equal(extract_matches(z, y_name = "Time", t_name = "Diet", c_name = "3"),
                c(342, 369, 375, 411, 414, 423, 428, 438, 457, 459))
