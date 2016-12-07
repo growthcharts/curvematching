@@ -1,0 +1,7 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^data-raw$
+^notes$
+^README\.Rmd$
+^scripts$
+^store$

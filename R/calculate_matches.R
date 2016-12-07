@@ -1,0 +1,277 @@
+#' Calculates matches for a child by predictive mean matching
+#'
+#' Curve matching is a technology that aims to predict
+#' individual growth curves. The method finds persons similar to the
+#' target person, and learn the possible future course of growth
+#' from the realized curves of the matched individuals. 
+#' 
+#' The function finds \code{k} matches for an individual in the same data set
+#' by means of stratified predictive mean matching.
+#' @param data A \code{data.frame} or \code{tbl_df}.
+#' @param which A named \code{list} with values for the 
+#' target case to be selected for data. \code{names(list)} correspond
+#' to the names in \code{names(data)}. Any list element with names that 
+#' do not appear in \code{names(data)} are ignored. The target case is selected 
+#' such that all conditions specified by \code{which} match. Note: 
+#' If multiple
+#' rows in \code{data} conform to \code{which}, i.e., if the target 
+#' specification is not unique, then the first row is taken 
+#' as the target case.
+#' @param y_name A character vector containing the name of the dependent 
+#' variable in \code{data}. The current function will only fit the model to 
+#' only the first element of \code{y_name}. By default, the model will be 
+#' fitted to \code{y_name = "haz"}.
+#' @param x_name A character vector containing the names of predictive 
+#' variables in \code{data} to will go into the linear part of the model.
+#' @param e_name A character vector containing the names of the variables for 
+#' which the match should be exact.
+#' @param t_name A character vector containing the names of the treatment 
+#' variables in \code{data}. The current function will only fit the model to 
+#' only the first element of \code{t_name}.
+#' @param k Requested number of matches. The default is \code{k = 10}.
+#' @param allow_matched_targets A logical that indicates whether the non-active target cases may be found as a match. The default is \code{TRUE}. 
+#' @param include_target A logical that indicates whether the target case 
+#' is included in the model. See details. The default is \code{TRUE}. 
+#' @param replace A logical that indicates whether matches should be found with
+#' or without replacement. The default is \code{FALSE}.
+#' @param verbose A logical indicating whether diagnostic information should 
+#' be printed.
+#' @param \dots Arguments passed down to \code{match_pmm()}.
+#' @return An object of class \code{match_list} which can be post-processed
+#' by the \code{extract_matches} function to extract the row numbers in 
+#' \code{data} of the matched children. The length 
+#' of the list will be always equal to \code{m} if \code{replace == TRUE}, 
+#' but may be shorter if \code{replace == FALSE} if the donors are exhausted. The
+#' length is zero if no matches can be found.
+#' @author Stef van Buuren 2016
+#' @details 
+#' By default, if the outcome variabe of the target case is observed, then 
+#' it used to fit the model, together with the candidate donors. 
+#' The default behavior can be changed by 
+#' setting \code{include_target = FALSE}. Note that if \code{x_name} 
+#' contains one or more factors, then it is possible 
+#' that the factor level of the target case is unique among all potential 
+#' donors. In that case, the model can still be fit, but prediction will
+#' fail, and hence no matches will be found.
+#' @references 
+#' van Buuren, S. (2014). \emph{Curve matching: A data-driven technique to 
+#' improve individual prediction of childhood growth}. Annals of Nutrition & 
+#' Metabolism, 65(3), 227-233.
+#' van Buuren, S. (2012). \emph{Flexible imputation of missing data}. 
+#' Boca Raton, FL: Chapman & Hall/CRC.
+#' @export
+calculate_matches <- function(data, which, y_name,
+                              x_name = character(),
+                              e_name = character(),
+                              t_name = character(),
+                              k = 10, 
+                              allow_matched_targets = TRUE,
+                              include_target = TRUE,
+                              replace = FALSE, 
+                              verbose = TRUE, ...) {
+  
+  equals_all <- function(x) {
+    if (is.null(names(x)) | length(x) == 0) return(character(0))
+    paste0(paste0(names(x), " == ", x), collapse  = " & ")
+  }
+  
+  # validate variable names
+  which <- which[names(which) %in% names(data)]
+  y_name <- y_name[y_name %in% names(data)]
+  x_name <- x_name[x_name %in% names(data)]
+  e_name <- e_name[e_name %in% names(data)]
+  t_name <- t_name[t_name %in% names(data)]
+  
+  # exception handlers
+  if (k <= 0 || length(which) == 0 || length(y_name) == 0) 
+    return(no_match())
+  
+  # select active variables
+  var_names <- unique(c(names(which), y_name, x_name, e_name, t_name))
+  data <- select(data, one_of(var_names))
+  
+  # add variable `target` according to argument `which`
+  cond <- equals_all(which)
+  data <- data %>% 
+    mutate(.row = 1:n()) %>%
+    group_by_(target = cond) %>%
+    mutate(.seqno = 1:n())
+  if (!any(data$target, na.rm = TRUE)) {
+    if (verbose) warning(paste("No row conforms to", cond))
+    return(no_match())
+  }
+  # note: assuming TRUE is last group
+  ng <- group_size(data)
+  nt <- ng[n_groups(data)]
+  data <- ungroup(data)
+  
+  # loop over targets
+  l1 <- vector("list", nt)
+  names(l1) <- as.vector(unlist(select_(filter(data, target), ~.row)))
+  target_names <- vector("integer", nt)
+  for (i in 1:nt) {
+    # define active case
+    data <- mutate(data, active = target & .seqno == i)
+    active <- filter(data, active)
+    # target_names[i] <- select(active, ".row")
+    
+    # re-define candidate set according to allow_matched_targets flag
+    if (allow_matched_targets)
+      data <- mutate(data, candidate = !active)
+    else data <- mutate(data, candidate = !target)
+    
+    # trim candidate set by requiring exact matches on 
+    # variables listed in `e_name`
+    trimmed <- select(active, one_of(e_name))
+    cond <- equals_all(sapply(trimmed, as.character))
+    if (length(cond) > 0) {
+      cond <- paste0("candidate == TRUE & ", cond)
+      data <- mutate_(data, candidate = cond)
+    }
+    
+    # loop over outcome names
+    ny <- length(y_name)
+    l2 <- vector("list", ny)
+    names(l2) <- y_name
+    for (iy in 1:ny) {
+      yvar <- y_name[iy]
+      
+      # extract subset of candidates
+      xy <- filter(data, candidate | active)
+      if (!include_target) xy[xy$active, yvar] <- NA
+      
+      # split by treatment variables
+      if (length(t_name) > 0) {
+        # duplicate one target row for each treatment level
+        # FIXME: as.name will only split on first variable name
+        t_name <- t_name[[1]]
+        t_unique <- unique(xy[, t_name])
+        mutate_call <- lazyeval::interp(~a, a = as.name(t_name))
+        augment <- slice(active, rep(1:n(), each = nrow(t_unique)))
+        augment[, t_name] <- t_unique
+        matched <- augment %>%
+          bind_rows(filter(xy, candidate)) %>%
+          group_by_(mutate_call) %>%
+          do(.row = match_pmm(., y_name = yvar, x_name = x_name, k = k, ...)) %>%
+          mutate(.by = TRUE)
+      } else {
+        row <- match_pmm(xy, y_name = yvar, x_name = x_name, k = k, ...)
+        matched <- tibble(.by = FALSE, .row = list(row))
+      }
+      l2[[iy]] <- matched
+    }
+    l1[[i]] <- l2
+  }
+  # names(l1) <- target_names
+  class(l1) <- "match_list"
+  l1
+}
+
+match_pmm <- function(data, y_name, x_name, k, exclude_NA = FALSE, ...) {
+  if (nrow(data) <= 1) return(no_match())
+
+  if (sum(data$active) > 1) stop("Too many active cases: ", sum(data$active))
+  if (sum(data$active) == 0) stop("No active case found.")
+  
+  # keep only independent variables taking at least two values
+  # note: apparently, next statement cannot be nested in keep <- statement,
+  # perhaps to force evaluation of data
+  x <- select(data, one_of(x_name))
+  keep <- sapply(lapply(x, unique), length) >= 2
+  x_keep <- x_name[keep]
+  x_terms <- paste(c("1", x_keep), sep = "", collapse = " + ")
+  form <- as.formula(paste(y_name, "~", x_terms))
+  
+  # fit model, and estimate prediction
+  fit <- lm(form, data = data, na.action = na.exclude, ...)
+  if (exclude_NA) yhat <- fitted(fit, ...)
+  else yhat <- predict(fit, newdata = data, ...)
+  data <- mutate(data, yhat = yhat)
+  yhat_active <- yhat[data$active]
+  
+  d <- abs(yhat - yhat_active)
+  d[data$active] <- NA
+  f <- d > 0
+  
+  # browser()
+  # add little noise to break ties
+  a1 <- ifelse(any(f, na.rm = TRUE), 
+               min(d[f], na.rm = TRUE), 1)
+  d <- d + runif(length(d), 0, a1 / 10^10)
+  
+  nmatch <- min(k, length(d) - 1)  # large nmatch: take all
+  if (nmatch == 1) return(as.integer(data[which.min(d), ".row"]))
+  ds <- sort.int(d, partial = nmatch)
+  matched <- data[d <= ds[nmatch] & !is.na(d), ".row"]
+  return(matched$.row)
+}
+
+no_match <- function(mode = "list") {
+  z <- vector(mode, length = 0)
+  class(z) <- "match_list"
+  return(z)
+}
+
+
+#' Extracts the calcated matches for indexing
+#'
+#' @param matches An object created by \code{calculate_matches()}. Such an 
+#' object has class \code{"match_list"}.
+#' @param i_name The name of the indvidual for which matches are wanted. 
+#' If unspecified, it takes the first individual.
+#' @param y_name The name of the outcome variable. If unspecified, it takes the
+#' first outcome.
+#' @param t_name A character vector containing the name of the treatment 
+#' variables.
+#' @param c_name The name of the category level within the treatment variable.
+#' @return The row numbers in 
+#' \code{data} corresponding to the matched children. The length 
+#' of the list will be always equal to \code{m} if \code{replace == TRUE}, 
+#' but may be shorter if \code{replace == FALSE} if the donors are exhausted. The
+#' length is zero if no matches can be found.
+#' @author Stef van Buuren 2016
+#' @references 
+#' van Buuren, S. (2014). \emph{Curve matching: A data-driven technique to 
+#' improve individual prediction of childhood growth}. Annals of Nutrition & 
+#' Metabolism, 65(3), 227-233.
+#' van Buuren, S. (2012). \emph{Flexible imputation of missing data}. 
+#' Boca Raton, FL: Chapman & Hall/CRC.
+#' @export
+extract_matches <- function(matches, 
+                            i_name = names(matches)[[1]],
+                            y_name = names(matches[[i_name]])[[1]],
+                            t_name = character(0),
+                            c_name = character(0)) {
+  if (!inherits(matches, "match_list")) stop("Argument `matches` not of class `match_list`.")
+  
+  if (!i_name %in% names(matches)) {
+    warning("Name (i) ", i_name, " not found.")
+    return(integer(0))
+  }
+  if (!y_name %in% names(matches[[i_name]])) {
+    warning("Name (y) ", y_name, " not found.")
+    return(integer(0))
+  }
+  
+  # if there is no .by variable, then simply ignore
+  # any treatment parameters and return first row
+  tab <- matches[[i_name]][[y_name]]
+  has_by <- tab[1, ".by"]
+  if (!has_by) return(as.vector(unlist(tab[1, ".row"])))
+  
+  # handle treatment selection: t_name and c_name
+  if (length(t_name) == 0) {
+    tn <- names(tab)
+    t_name <- tn[!tn %in% c(".by", ".row")][1]
+  }
+  if (!t_name %in% names(tab)) {
+    warning("Name (t) ", t_name, " not found.")
+    return(integer(0))
+  }
+  if (length(c_name) == 0) c_name <- unlist(tab[1, t_name])
+  if (!c_name %in% unlist(tab[, t_name])) {
+    warning("Name (c) ", c_name, " not found.")
+    return(integer(0))
+  }
+  as.vector(unlist(tab[unlist(tab[, t_name]) == c_name, ".row"]))
+}
