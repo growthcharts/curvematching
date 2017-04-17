@@ -43,7 +43,7 @@
 #' of the list will be always equal to \code{m} if \code{replace == TRUE},
 #' but may be shorter if \code{replace == FALSE} if the donors are exhausted. The
 #' length is zero if no matches can be found.
-#' @author Stef van Buuren 2016
+#' @author Stef van Buuren 2017
 #' @details
 #' By default, if the outcome variabe of the target case is observed, then
 #' it used to fit the model, together with the candidate donors.
@@ -271,12 +271,15 @@ extract_matches <- function(matches,
                             c_name = character(0)) {
   if (!inherits(matches, "match_list")) stop("Argument `matches` not of class `match_list`.")
 
-  if (!i_name %in% names(matches)) {
-    warning("Name (i) ", i_name, " not found.")
+  found <- i_name %in% names(matches)
+  if (any(!found)) {
+    warning("i_name elements ", i_name[!found], " not found.")
     return(integer(0))
   }
-  if (!y_name %in% names(matches[[i_name]])) {
-    warning("Name (y) ", y_name, " not found.")
+
+  found <- y_name %in% names(matches[[i_name]])
+  if (any(!found)) {
+    warning("y_name elements", y_name[!found], " not found.")
     return(integer(0))
   }
 

@@ -48,4 +48,4 @@ extract_matches(z, i_name = "23", y_name = "Time", t_name = "Diet", c_name = "3"
 # z <- calculate_matches(ChickWeight, list(Chick = 2), y_name = c("weight", "Time"), t_name = "Time")
 # extract_matches(z)
 # extract_matches(z, i_name = "23", y_name = "Time")
-# extract_matches(z, i_name = "23", y_name = "Time", t_name = "Time", c_name = "2")
+extract_matches(z, i_name = "23", y_name = "Time", t_name = "Diet", c_name = "2")

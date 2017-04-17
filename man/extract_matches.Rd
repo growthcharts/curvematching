@@ -33,9 +33,6 @@ length is zero if no matches can be found.
 \description{
 Extracts the calcated matches for indexing
 }
-\author{
-Stef van Buuren 2016
-}
 \references{
 van Buuren, S. (2014). \emph{Curve matching: A data-driven technique to
 improve individual prediction of childhood growth}. Annals of Nutrition &
@@ -43,4 +40,6 @@ Metabolism, 65(3), 227-233.
 van Buuren, S. (2012). \emph{Flexible imputation of missing data}.
 Boca Raton, FL: Chapman & Hall/CRC.
 }
-
+\author{
+Stef van Buuren 2016
+}
