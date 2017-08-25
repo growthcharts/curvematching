@@ -135,7 +135,7 @@ calculate_matches <- function(data,
 
   # loop over tgts
   l1 <- vector("list", nt)
-  names(l1) <- as.vector(unlist(select(filter_(data, ~.target), .row)))
+  names(l1) <- as.vector(unlist(select(filter_(data, ~.target), .data$.row)))
   for (i in 1:nt) {
     # define active case
     data <- mutate(data, active = .target & .seqno == i)

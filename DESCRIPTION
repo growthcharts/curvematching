@@ -10,7 +10,8 @@ Depends:
 Imports:
     stats,
     tibble,
-    lazyeval
+    lazyeval,
+    rlang
 Suggests:
     testthat,
     knitr

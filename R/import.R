@@ -2,6 +2,7 @@
 #' @importFrom stats as.formula lm na.exclude predict runif approx cor fitted
 #' @importFrom lazyeval interp
 #' @importFrom tibble tibble add_column
+#' @importFrom rlang .data
 NULL
 
-globalVariables(c(".", ".seqno", ".target", "candidate"))
+# globalVariables(c(".", ".seqno", ".target", "candidate"))
