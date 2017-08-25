@@ -131,11 +131,11 @@ calculate_matches <- function(data,
   # select active variables
   sys <- c(".row", ".target", ".seqno")
   var_names <- unique(c(sys, y_name, x_name, e_name, t_name))
-  data <- select(data, one_of(var_names))
+  data <- select(data, !! var_names)
 
   # loop over tgts
   l1 <- vector("list", nt)
-  names(l1) <- as.vector(unlist(select_(filter_(data, ~.target), ~.row)))
+  names(l1) <- as.vector(unlist(select(filter_(data, ~.target), .row)))
   for (i in 1:nt) {
     # define active case
     data <- mutate(data, active = .target & .seqno == i)
@@ -149,7 +149,7 @@ calculate_matches <- function(data,
 
     # trim candidate set by requiring exact matches on
     # variables listed in `e_name`
-    trimmed <- select(active, one_of(e_name))
+    trimmed <- select(active, !! e_name)
     cond <- equals_all(sapply(trimmed, as.character))
     if (length(cond) > 0) {
       cond <- paste0("candidate == TRUE & ", cond)
@@ -203,7 +203,7 @@ match_pmm <- function(data, y_name, x_name, k, exclude_NA = FALSE, ...) {
   # keep only independent variables taking at least two values
   # note: apparently, next statement cannot be nested in keep <- statement,
   # perhaps to force evaluation of data
-  x <- select(data, one_of(x_name))
+  x <- select(data, !! x_name)
   keep <- sapply(lapply(x, unique), length) >= 2
   x_keep <- x_name[keep]
   x_terms <- paste(c("1", x_keep), sep = "", collapse = " + ")
