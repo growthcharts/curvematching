@@ -1,8 +1,11 @@
-#' @import dplyr
 #' @importFrom stats as.formula lm na.exclude predict runif approx cor fitted
 #' @importFrom lazyeval interp
 #' @importFrom tibble tibble add_column
-#' @importFrom rlang .data
+#' @importFrom rlang .data quo
+#' @importFrom dplyr %>% filter select mutate bind_rows do
+#'             group_by group_by_ group_size mutate_ n n_groups
+#'             slice ungroup
 NULL
 
-# globalVariables(c(".", ".seqno", ".target", "candidate"))
+## quiets concerns of R CMD check re: the .'s that appear in pipelines
+if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))

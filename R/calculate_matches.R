@@ -99,7 +99,7 @@ calculate_matches <- function(data,
 
   # restrict to subset if specified
   subset_call <- substitute(subset)
-  if (!is.null(subset_call)) data <- filter_(data, subset_call)
+  if (!is.null(subset_call)) data <- filter(data, !! subset_call)
 
   # construct target variable
   condition_call <- substitute(condition)
@@ -238,3 +238,5 @@ no_match <- function(mode = "list") {
   class(z) <- "match_list"
   return(z)
 }
+
+
