@@ -164,7 +164,7 @@ calculate_matches <- function(data,
       yvar <- y_name[iy]
 
       # extract subset of candidates
-      xy <- filter(data, candidate | active)
+      xy <- filter(data, .data$candidate | active)
       if (!include_target) xy[xy$active, yvar] <- NA
 
       # split by treatment variables
@@ -177,7 +177,7 @@ calculate_matches <- function(data,
         augment <- slice(active, rep(1:n(), each = nrow(t_unique)))
         augment[, t_name] <- t_unique
         matched <- augment %>%
-          bind_rows(filter(xy, candidate)) %>%
+          bind_rows(filter(xy, .data$candidate)) %>%
           group_by_(mutate_call) %>%
           do(.row = match_pmm(., y_name = yvar, x_name = x_name, k = k, ...)) %>%
           mutate(.by = TRUE)
