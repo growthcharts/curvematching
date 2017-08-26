@@ -103,8 +103,8 @@ calculate_matches <- function(data,
 
   # construct target variable
   condition_call <- substitute(condition)
-  data <- mutate_(data, .target = condition_call) %>%
-    group_by_(~.target) %>%
+  data <- mutate(data, .target = !! condition_call) %>%
+    group_by(.data$.target) %>%
     mutate(.seqno = 1:n())
 
   if (!any(data$.target, na.rm = TRUE)) {
@@ -135,17 +135,17 @@ calculate_matches <- function(data,
 
   # loop over tgts
   l1 <- vector("list", nt)
-  names(l1) <- as.vector(unlist(select(filter_(data, ~.target), .data$.row)))
+  names(l1) <- as.vector(unlist(select(filter(data, .data$.target), .data$.row)))
   for (i in 1:nt) {
     # define active case
-    data <- mutate(data, active = .target & .seqno == i)
+    data <- mutate(data, active = .data$.target & .data$.seqno == i)
     active <- filter(data, active)
     # target_names[i] <- select(active, ".row")
 
     # re-define candidate set according to allow_matched_targets flag
     if (allow_matched_targets)
       data <- mutate(data, candidate = !active)
-    else data <- mutate(data, candidate = !.target)
+    else data <- mutate(data, candidate = !.data$.target)
 
     # trim candidate set by requiring exact matches on
     # variables listed in `e_name`
