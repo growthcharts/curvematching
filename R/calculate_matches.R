@@ -172,13 +172,15 @@ calculate_matches <- function(data,
         # duplicate one tgt row for each treatment level
         # FIXME: as.name will only split on first variable name
         t_name <- t_name[[1]]
+        # t_name_list <- as.list(t_name)
         t_unique <- unique(xy[, t_name])
-        mutate_call <- lazyeval::interp(~a, a = as.name(t_name))
+        mutate_call <- rlang::quo(!! rlang::sym(t_name))
+        # browser()
         augment <- slice(active, rep(1:n(), each = nrow(t_unique)))
         augment[, t_name] <- t_unique
         matched <- augment %>%
           bind_rows(filter(xy, .data$candidate)) %>%
-          group_by_(mutate_call) %>%
+          group_by(!!! mutate_call) %>%
           do(.row = match_pmm(., y_name = yvar, x_name = x_name, k = k, ...)) %>%
           mutate(.by = TRUE)
       } else {
