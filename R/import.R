@@ -1,9 +1,9 @@
 #' @importFrom stats as.formula lm na.exclude predict runif approx cor fitted
 #' @importFrom lazyeval interp
 #' @importFrom tibble tibble add_column
-#' @importFrom rlang .data quo
+#' @importFrom rlang .data quo sym
 #' @importFrom dplyr %>% filter select mutate bind_rows do
-#'             group_by group_by_ group_size mutate_ n n_groups
+#'             group_by group_size mutate_ n n_groups
 #'             slice ungroup
 NULL
 

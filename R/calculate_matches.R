@@ -174,8 +174,7 @@ calculate_matches <- function(data,
         t_name <- t_name[[1]]
         # t_name_list <- as.list(t_name)
         t_unique <- unique(xy[, t_name])
-        mutate_call <- rlang::quo(!! rlang::sym(t_name))
-        # browser()
+        mutate_call <- quo(!! sym(t_name))
         augment <- slice(active, rep(1:n(), each = nrow(t_unique)))
         augment[, t_name] <- t_unique
         matched <- augment %>%
