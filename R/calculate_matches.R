@@ -12,10 +12,8 @@
 #'  for which matches will be sought. Missing values are taken as false.
 #'  If omitted, all rows will be successively taken as targets.
 #'  This can result in intensive computation if \code{nrow(data)} is large.
-#' @param y_name A character vector containing the name of the dependent
-#' variable in \code{data}. The current function will only fit the model to
-#' only the first element of \code{y_name}. By default, the model will be
-#' fitted to \code{y_name = "haz"}.
+#' @param y_name A character vector containing the names of the dependent
+#' variables in \code{data}.
 #' @param x_name A character vector containing the names of predictive
 #' variables in \code{data} to will go into the linear part of the model.
 #' @param e_name A character vector containing the names of the variables for
@@ -92,6 +90,9 @@ calculate_matches <- function(data,
     if (is.null(names(x)) | length(x) == 0) return(character(0))
     paste0(paste0(names(x), " == ", x), collapse  = " & ")
   }
+
+  # check input
+  if (!is.data.frame(data)) return(no_match())
 
   # append unique row id
   data <- data %>%

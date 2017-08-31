@@ -17,10 +17,8 @@ for which matches will be sought. Missing values are taken as false.
 If omitted, all rows will be successively taken as targets.
 This can result in intensive computation if \code{nrow(data)} is large.}
 
-\item{y_name}{A character vector containing the name of the dependent
-variable in \code{data}. The current function will only fit the model to
-only the first element of \code{y_name}. By default, the model will be
-fitted to \code{y_name = "haz"}.}
+\item{y_name}{A character vector containing the names of the dependent
+variables in \code{data}.}
 
 \item{x_name}{A character vector containing the names of predictive
 variables in \code{data} to will go into the linear part of the model.}
