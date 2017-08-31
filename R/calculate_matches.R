@@ -232,13 +232,21 @@ match_pmm <- function(data, y_name, x_name, k, exclude_NA = FALSE, ...) {
   if (nmatch == 1) return(as.integer(data[which.min(d), ".row"]))
   ds <- sort.int(d, partial = nmatch)
   matched <- data[d <= ds[nmatch] & !is.na(d), ".row"]
-  return(matched$.row)
+  matched$.row
 }
 
+#' Returns empty match_list object
+#'
+#' The empty \code{match_list} signals that no matches have been found. The
+#' empty list should be returned if an error occurs in
+#' \code{calculate_matches()} so that its output remains consistent.
+#' @param mode By default a \code{"list"}
+#' @return An empty object of class \code{match_list}
+#' @export
 no_match <- function(mode = "list") {
   z <- vector(mode, length = 0)
   class(z) <- "match_list"
-  return(z)
+  z
 }
 
 

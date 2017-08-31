@@ -2,6 +2,7 @@
 
 export(calculate_matches)
 export(extract_matches)
+export(no_match)
 importFrom(dplyr,"%>%")
 importFrom(dplyr,bind_rows)
 importFrom(dplyr,do)
