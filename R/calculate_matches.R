@@ -91,6 +91,18 @@ calculate_matches <- function(data,
     paste0(paste0(names(x), " == ", x), collapse  = " & ")
   }
 
+  equals_all2 <- function(x) {
+    if (is.null(names(x)) | length(x) == 0) return(character(0))
+    f <- sapply(x, is.factor, simplify = TRUE)
+    cv <- vector("character", length(x))
+    for (j in 1:length(x)) {
+      xj <- x[[j]]
+      if (is.factor(xj)) cv[j] <- paste0(names(x)[j], ' == "', as.character(xj), '"')
+      else cv[j] <- paste0(names(x)[j], ' == ', xj)
+    }
+    paste0(cv, collapse = " & ")
+  }
+
   # check input
   if (!is.data.frame(data)) return(no_match())
 
@@ -116,8 +128,6 @@ calculate_matches <- function(data,
   ng <- group_size(data)
   nt <- ng[n_groups(data)]
   data <- ungroup(data)
-
-  # return(data)
 
   # validate variable names
   y_name <- y_name[y_name %in% names(data)]
@@ -151,7 +161,7 @@ calculate_matches <- function(data,
     # trim candidate set by requiring exact matches on
     # variables listed in `e_name`
     trimmed <- select(active, !! e_name)
-    cond <- equals_all(sapply(trimmed, as.character))
+    cond <- equals_all2(trimmed)
     if (length(cond) > 0) {
       cond <- paste0("candidate == TRUE & ", cond)
       data <- mutate_(data, candidate = cond)
