@@ -88,12 +88,6 @@ calculate_matches <- function(data,
 
   equals_all <- function(x) {
     if (is.null(names(x)) | length(x) == 0) return(character(0))
-    paste0(paste0(names(x), " == ", x), collapse  = " & ")
-  }
-
-  equals_all2 <- function(x) {
-    if (is.null(names(x)) | length(x) == 0) return(character(0))
-    f <- sapply(x, is.factor, simplify = TRUE)
     cv <- vector("character", length(x))
     for (j in 1:length(x)) {
       xj <- x[[j]]
@@ -161,7 +155,7 @@ calculate_matches <- function(data,
     # trim candidate set by requiring exact matches on
     # variables listed in `e_name`
     trimmed <- select(active, !! e_name)
-    cond <- equals_all2(trimmed)
+    cond <- equals_all(trimmed)
     if (length(cond) > 0) {
       cond <- paste0("candidate == TRUE & ", cond)
       data <- mutate_(data, candidate = cond)
