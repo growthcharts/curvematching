@@ -29,6 +29,8 @@ extract_matches <- function(matches,
                             c_name = character(0)) {
   if (!inherits(matches, "match_list")) stop("Argument `matches` not of class `match_list`.")
 
+  if (length(matches) == 0) return(integer(0))
+
   found <- i_name %in% names(matches)
   if (any(!found)) {
     warning("i_name elements ", i_name[!found], " not found.")

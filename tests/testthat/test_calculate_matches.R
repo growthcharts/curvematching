@@ -25,8 +25,13 @@ test_that("warns about rank-deficient fit", {
 
 context("extract_matches()")
 set.seed(234)
+z0 <- calculate_matches(data, Time == 0, y_name = "sasa")
 z <- calculate_matches(data, Time == 0 & Chick == 48,
                        y_name = c("weight", "Time"), t_name = "Diet")
+
+test_that("return integer(0) if there are matches", {
+  expect_equal(length(extract_matches(z0)), 0L)
+})
 
 test_that("returns vector of 10 row indices", {
   expect_equal(extract_matches(z, y_name = "Time", t_name = "Diet", c_name = "3"),
