@@ -118,6 +118,11 @@ calculate_matches <- function(data,
     if (verbose) warning(paste("No rows conform to", quote(condition)))
     return(no_match())
   }
+
+  # no matches if all outcomes in the donor part are missing
+  # if (all(is.na(data[!data$.target, y_name]))) return(no_match())
+  # FIMXE: add test for absent donor outcomes
+
   # note: assuming TRUE is last group
   ng <- group_size(data)
   nt <- ng[n_groups(data)]
