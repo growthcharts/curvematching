@@ -16,6 +16,7 @@ Suggests:
     testthat,
     knitr
 LazyData: TRUE
+Encoding: UTF-8
 License: file LICENSE
 VignetteBuilder: knitr
 Acknowledgement: Development of this package was kindly supported by the HBGDki
