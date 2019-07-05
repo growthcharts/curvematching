@@ -26,6 +26,8 @@
 #' are made, and this can be used to trim down the size of the data in which
 #' matches are defined and sought.
 #' @param k Requested number of matches. The default is \code{k = 10}.
+#' @param break_ties A logical indicating whether ties should broken
+#'   randomly. The default (\code{TRUE}) breaks ties randomly.
 #' @param allow_matched_targets A logical that indicates whether the non-active
 #'  target cases may be found as a match. The default is \code{TRUE}.
 #' @param include_target A logical that indicates whether the target case
@@ -81,6 +83,7 @@ calculate_matches <- function(data,
                               t_name = character(),
                               subset = NULL,
                               k = 10,
+                              break_ties = TRUE,
                               allow_matched_targets = TRUE,
                               include_target = TRUE,
                               replace = FALSE,
@@ -190,10 +193,12 @@ calculate_matches <- function(data,
         matched <- augment %>%
           bind_rows(filter(xy, .data$candidate)) %>%
           group_by(!!! mutate_call) %>%
-          do(.row = match_pmm(., y_name = yvar, x_name = x_name, k = k, ...)) %>%
+          do(.row = match_pmm(., y_name = yvar, x_name = x_name,
+                              k = k, break_ties = break_ties, ...)) %>%
           mutate(.by = TRUE)
       } else {
-        row <- match_pmm(xy, y_name = yvar, x_name = x_name, k = k, ...)
+        row <- match_pmm(xy, y_name = yvar, x_name = x_name, k = k,
+                         break_ties = break_ties, ...)
         matched <- tibble(.by = FALSE, .row = list(row))
       }
       l2[[iy]] <- matched
@@ -205,7 +210,8 @@ calculate_matches <- function(data,
   l1
 }
 
-match_pmm <- function(data, y_name, x_name, k, exclude_NA = FALSE, ...) {
+match_pmm <- function(data, y_name, x_name, k, break_ties = TRUE,
+                      exclude_NA = FALSE, ...) {
   if (nrow(data) <= 1) return(no_match())
 
   if (sum(data$active) > 1) stop("Too many active cases: ", sum(data$active))
@@ -231,11 +237,10 @@ match_pmm <- function(data, y_name, x_name, k, exclude_NA = FALSE, ...) {
   d[data$active] <- NA
   f <- d > 0
 
-  # browser()
   # add little noise to break ties
   a1 <- ifelse(any(f, na.rm = TRUE),
                min(d[f], na.rm = TRUE), 1)
-  d <- d + runif(length(d), 0, a1 / 10^10)
+  if (break_ties) d <- d + runif(length(d), 0, a1 / 10^10)
 
   nmatch <- min(k, length(d) - 1)  # large nmatch: take all
   if (nmatch == 1) return(as.integer(data[which.min(d), ".row"]))

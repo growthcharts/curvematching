@@ -6,8 +6,8 @@
 \usage{
 calculate_matches(data, condition, y_name, x_name = character(),
   e_name = character(), t_name = character(), subset = NULL,
-  k = 10, allow_matched_targets = TRUE, include_target = TRUE,
-  replace = FALSE, verbose = TRUE, ...)
+  k = 10, break_ties = TRUE, allow_matched_targets = TRUE,
+  include_target = TRUE, replace = FALSE, verbose = TRUE, ...)
 }
 \arguments{
 \item{data}{A \code{data.frame} or \code{tbl_df}.}
@@ -36,6 +36,9 @@ are made, and this can be used to trim down the size of the data in which
 matches are defined and sought.}
 
 \item{k}{Requested number of matches. The default is \code{k = 10}.}
+
+\item{break_ties}{A logical indicating whether ties should broken
+randomly. The default (\code{TRUE}) breaks ties randomly.}
 
 \item{allow_matched_targets}{A logical that indicates whether the non-active
 target cases may be found as a match. The default is \code{TRUE}.}
