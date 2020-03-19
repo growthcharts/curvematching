@@ -4,10 +4,22 @@
 \alias{calculate_matches}
 \title{Calculates matches for a child by predictive mean matching}
 \usage{
-calculate_matches(data, condition, y_name, x_name = character(),
-  e_name = character(), t_name = character(), subset = NULL,
-  k = 10, break_ties = TRUE, allow_matched_targets = TRUE,
-  include_target = TRUE, replace = FALSE, verbose = TRUE, ...)
+calculate_matches(
+  data,
+  condition,
+  y_name,
+  x_name = character(),
+  e_name = character(),
+  t_name = character(),
+  subset = NULL,
+  k = 10,
+  break_ties = TRUE,
+  allow_matched_targets = TRUE,
+  include_target = TRUE,
+  replace = FALSE,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{data}{A \code{data.frame} or \code{tbl_df}.}

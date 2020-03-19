@@ -21,4 +21,4 @@ License: file LICENSE
 VignetteBuilder: knitr
 Acknowledgement: Development of this package was kindly supported by the HBGDki
     program of the Bill & Melinda Gates Foundation
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2

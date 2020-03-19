@@ -4,9 +4,13 @@
 \alias{extract_matches}
 \title{Extracts the calcated matches for indexing}
 \usage{
-extract_matches(matches, i_name = names(matches)[[1]],
-  y_name = names(matches[[i_name]])[[1]], t_name = character(0),
-  c_name = character(0))
+extract_matches(
+  matches,
+  i_name = names(matches)[[1]],
+  y_name = names(matches[[i_name]])[[1]],
+  t_name = character(0),
+  c_name = character(0)
+)
 }
 \arguments{
 \item{matches}{An object created by \code{calculate_matches()}. Such an
