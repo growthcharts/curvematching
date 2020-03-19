@@ -14,7 +14,10 @@ Imports:
     dplyr
 Suggests:
     testthat,
-    knitr
+    knitr,
+    donorloader
+Remotes:
+  stefvanbuuren/donorloader
 LazyData: TRUE
 Encoding: UTF-8
 License: file LICENSE
