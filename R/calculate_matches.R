@@ -150,6 +150,7 @@ calculate_matches <- function(data,
   l1 <- vector("list", nt)
   names(l1) <- as.vector(unlist(select(filter(data, .data$.target), .data$.row)))
   for (i in 1:nt) {
+    # FIXME: Is it really OK to overwrite data? SvB 20200319
     # define active case
     data <- mutate(data, active = .data$.target & .data$.seqno == i)
     active <- filter(data, active)
