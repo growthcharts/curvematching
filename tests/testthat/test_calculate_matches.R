@@ -1,5 +1,4 @@
-library("curvematching")
-context("calculate_matches()")
+context("calculate_matches")
 
 set.seed(234)
 data <- datasets::ChickWeight
