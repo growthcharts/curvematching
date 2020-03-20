@@ -250,10 +250,10 @@ match_pmm <- function(data, y_name, x_name, k, break_ties = TRUE,
                min(d[f], na.rm = TRUE), 1)
   if (break_ties) d <- d + runif(length(d), 0, a1 / 10^10)
 
-  nmatch <- min(k, length(d) - 1)  # large nmatch: take all
-  if (nmatch == 1) return(as.integer(data$.row[which.min(d)]))
-  ds <- sort.int(d, partial = nmatch)
-  data$.row[d <= ds[nmatch] & !is.na(d)][1:nmatch]
+  nmatch <- min(k, length(d) - 1L)  # large nmatch: take all
+  if (nmatch == 1L) return(as.integer(data$.row[which.min(d)]))
+  d_cut <- sort.int(d, partial = nmatch)[nmatch][1L]
+  as.integer(data$.row[d <= d_cut & !is.na(d)][1L:nmatch])
 }
 
 #' Returns empty match_list object
