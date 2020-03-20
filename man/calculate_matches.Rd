@@ -93,6 +93,12 @@ contains one or more factors, then it is possible
 that the factor level of the target case is unique among all potential
 donors. In that case, the model can still be fit, but prediction will
 fail, and hence no matches will be found.
+
+If \code{break_ties == FALSE}, the function returns the first
+\code{nmatch} matches as they appear in the order of \code{data}.
+This method leads to an overuse of the first part of the data, and
+hence underestimates variability. The better option is to break ties
+randomly (the default).
 }
 \examples{
 library("curvematching")

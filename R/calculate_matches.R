@@ -53,6 +53,13 @@
 #' that the factor level of the target case is unique among all potential
 #' donors. In that case, the model can still be fit, but prediction will
 #' fail, and hence no matches will be found.
+#'
+#' If \code{break_ties == FALSE}, the function returns the first
+#' \code{nmatch} matches as they appear in the order of \code{data}.
+#' This method leads to an overuse of the first part of the data, and
+#' hence underestimates variability. The better option is to break ties
+#' randomly (the default).
+#'
 #' @references
 #' van Buuren, S. (2014). \emph{Curve matching: A data-driven technique to
 #' improve individual prediction of childhood growth}. Annals of Nutrition &
@@ -236,18 +243,17 @@ match_pmm <- function(data, y_name, x_name, k, break_ties = TRUE,
 
   d <- abs(yhat - yhat_active)
   d[data$active] <- NA
-  f <- d > 0
 
   # add little noise to break ties
+  f <- d > 0
   a1 <- ifelse(any(f, na.rm = TRUE),
                min(d[f], na.rm = TRUE), 1)
   if (break_ties) d <- d + runif(length(d), 0, a1 / 10^10)
 
   nmatch <- min(k, length(d) - 1)  # large nmatch: take all
-  if (nmatch == 1) return(as.integer(data[which.min(d), ".row"]))
+  if (nmatch == 1) return(as.integer(data$.row[which.min(d)]))
   ds <- sort.int(d, partial = nmatch)
-  matched <- data[d <= ds[nmatch] & !is.na(d), ".row"]
-  matched$.row
+  data$.row[d <= ds[nmatch] & !is.na(d)][1:nmatch]
 }
 
 #' Returns empty match_list object
