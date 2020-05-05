@@ -1,7 +1,7 @@
 Package: curvematching
 Type: Package
 Title: Personalized prediction by matching invididuals
-Version: 0.9.0
+Version: 0.9.1
 Authors@R: person("Stef", "van Buuren", email = "stef.vanbuuren@tno.nl", role = c("aut", "cre"))
 Description: Personalized prediction by matching invididuals.
 Depends:
@@ -24,4 +24,4 @@ License: file LICENSE
 VignetteBuilder: knitr
 Acknowledgement: Development of this package was kindly supported by the HBGDki
     program of the Bill & Melinda Gates Foundation
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
