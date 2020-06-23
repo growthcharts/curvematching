@@ -8,7 +8,7 @@ z <- calculate_matches(data, condition = id %in% 10001,
                        y_name = "dsc_2",
                        x_name = x_name,
                        k = 10)
-outcome <- c(145, 691, 864, 891, 1145, 1258, 1553, 1855, 1862, 1904)
+outcome <- c(283, 426, 525, 552,  574, 855, 1207, 1407, 1575, 1877)
 
 test_that("10001 returns fixed set", {
   expect_equal(extract_matches(z), outcome)
