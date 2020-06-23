@@ -200,7 +200,7 @@ calculate_matches <- function(data,
         augment[, t_name] <- t_unique
         matched <- augment %>%
           bind_rows(filter(xy, .data$candidate)) %>%
-          group_by(!!! mutate_call) %>%
+          group_by(!! mutate_call) %>%
           do(.row = match_pmm(., y_name = yvar, x_name = x_name,
                               k = k, break_ties = break_ties, ...)) %>%
           mutate(.by = TRUE)
