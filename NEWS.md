@@ -1,3 +1,7 @@
+# curvematching 0.11.0
+
+* Replaces `substitute()` by tidyeval `enexpr()`
+
 # curvematching 0.10.0
 
 * Removes the !!! expression, deprecated in `R 4.0.0`
