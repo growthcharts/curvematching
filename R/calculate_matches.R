@@ -72,8 +72,7 @@
 #' data[543, ]
 #'
 #' # find matches for observation in row 543 for outcome weight
-#' m <- calculate_matches(data, Time == 0 & Chick == 48,
-#'   y_name = "weight", x_name = c("Time", "Diet"))
+#' m <- calculate_matches(data, Time == 0 & Chick == 48, y_name = "weight", x_name = c("Time", "Diet"))
 #'
 #' # row numbers of matched cases
 #' extract_matches(m)
@@ -115,11 +114,11 @@ calculate_matches <- function(data,
     mutate(.row = 1:n())
 
   # restrict to subset if specified
-  subset_call <- substitute(subset)
+  subset_call <- enexpr(subset)
   if (!is.null(subset_call)) data <- filter(data, !! subset_call)
 
   # construct target variable
-  condition_call <- substitute(condition)
+  condition_call <- enexpr(condition)
   data <- mutate(data, .target = !! condition_call) %>%
     group_by(.data$.target) %>%
     mutate(.seqno = 1:n())

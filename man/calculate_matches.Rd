@@ -106,8 +106,7 @@ data <- datasets::ChickWeight
 data[543, ]
 
 # find matches for observation in row 543 for outcome weight
-m <- calculate_matches(data, Time == 0 & Chick == 48,
-  y_name = "weight", x_name = c("Time", "Diet"))
+m <- calculate_matches(data, Time == 0 & Chick == 48, y_name = "weight", x_name = c("Time", "Diet"))
 
 # row numbers of matched cases
 extract_matches(m)
