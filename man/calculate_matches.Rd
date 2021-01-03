@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate_matches.R
 \name{calculate_matches}
 \alias{calculate_matches}
-\title{Calculates matches for a child by predictive mean matching}
+\title{Calculates matches for a child by blended distance matching}
 \usage{
 calculate_matches(
   data,
@@ -13,10 +13,12 @@ calculate_matches(
   t_name = character(),
   subset = NULL,
   k = 10,
+  replace = FALSE,
+  blend = 1,
   break_ties = TRUE,
   allow_matched_targets = TRUE,
   include_target = TRUE,
-  replace = FALSE,
+  kappa = 3,
   verbose = TRUE,
   ...
 )
@@ -25,15 +27,15 @@ calculate_matches(
 \item{data}{A \code{data.frame} or \code{tbl_df}.}
 
 \item{condition}{Logical expression defining the set of rows in \code{data}
-for which matches will be sought. Missing values are taken as false.
-If omitted, all rows will be successively taken as targets.
-This can result in intensive computation if \code{nrow(data)} is large.}
+for which matches will be sought. Missing values are taken as false. If
+omitted, all rows will be successively taken as targets. This can result in
+intensive computation if \code{nrow(data)} is large.}
 
 \item{y_name}{A character vector containing the names of the dependent
 variables in \code{data}.}
 
-\item{x_name}{A character vector containing the names of predictive
-variables in \code{data} to will go into the linear part of the model.}
+\item{x_name}{A character vector containing the names of predictive variables
+in \code{data} to will go into the linear part of the model.}
 
 \item{e_name}{A character vector containing the names of the variables for
 which the match should be exact.}
@@ -42,63 +44,67 @@ which the match should be exact.}
 variables in \code{data}. The current function will only fit the model to
 only the first element of \code{t_name}.}
 
-\item{subset}{Logical expression defining the set of rows taken
-from \code{data}. This subset is selected before any other calculations
-are made, and this can be used to trim down the size of the data in which
+\item{subset}{Logical expression defining the set of rows taken from
+\code{data}. This subset is selected before any other calculations are
+made, and this can be used to trim down the size of the data in which
 matches are defined and sought.}
 
 \item{k}{Requested number of matches. The default is \code{k = 10}.}
 
-\item{break_ties}{A logical indicating whether ties should broken
-randomly. The default (\code{TRUE}) breaks ties randomly.}
+\item{replace}{A logical that indicates whether to match with or without
+replacement. The default is \code{FALSE}.}
+
+\item{blend}{An integer value between 0 and 1 that indicates the blend
+between predictive mean matching with replacement (\code{1}) and euclidian
+distance matching (\code{0}). The default is \code{1}.}
+
+\item{break_ties}{A logical indicating whether ties should broken randomly.
+The default (\code{TRUE}) breaks ties randomly.}
 
 \item{allow_matched_targets}{A logical that indicates whether the non-active
 target cases may be found as a match. The default is \code{TRUE}.}
 
-\item{include_target}{A logical that indicates whether the target case
-is included in the model. See details. The default is \code{TRUE}.}
+\item{include_target}{A logical that indicates whether the target case is
+included in the model. See details. The default is \code{TRUE}.}
 
-\item{replace}{A logical that indicates whether matches should be found with
-or without replacement. The default is \code{FALSE}.}
+\item{kappa}{A numeric value that serves as the sensitivity parameter for the
+inverse distance weighting. Used when drawing with replacement. The default
+is \code{3}.}
 
-\item{verbose}{A logical indicating whether diagnostic information should
-be printed.}
+\item{verbose}{A logical indicating whether diagnostic information should be
+printed.}
 
 \item{\dots}{Arguments passed down to \code{match_pmm()}.}
 }
 \value{
-An object of class \code{match_list} which can be post-processed
-by the \code{extract_matches} function to extract the row numbers in
-\code{data} of the matched children. The length
-of the list will be always equal to \code{m} if \code{replace == TRUE},
-but may be shorter if \code{replace == FALSE} if the donors are exhausted. The
-length is zero if no matches can be found.
+An object of class \code{match_list} which can be post-processed by
+  the \code{extract_matches} function to extract the row numbers in
+  \code{data} of the matched children. The length of the list will be always
+  equal to \code{m} if \code{replace == TRUE}, but may be shorter if
+  \code{replace == FALSE} if the donors are exhausted. The length is zero if
+  no matches can be found.
 }
 \description{
-Curve matching is a technology that aims to predict
-individual growth curves. The method finds persons similar to the
-target person, and learn the possible future course of growth
-from the realized curves of the matched individuals.
+Curve matching is a technology that aims to predict individual growth curves.
+The method finds persons similar to the target person, and learn the possible
+future course of growth from the realized curves of the matched individuals.
 }
 \details{
-The function finds \code{k} matches for an individual in the same data set
-by means of stratified predictive mean matching.
+The function finds \code{k} matches for an individual in the same data set by
+means of stratified predictive mean matching or nearest neighbour matching.
 
+By default, if the outcome variabe of the target case is observed,
+  then it used to fit the model, together with the candidate donors. The
+  default behavior can be changed by setting \code{include_target = FALSE}.
+  Note that if \code{x_name} contains one or more factors, then it is
+  possible that the factor level of the target case is unique among all
+  potential donors. In that case, the model can still be fit, but prediction
+  will fail, and hence no matches will be found.
 
-By default, if the outcome variabe of the target case is observed, then
-it used to fit the model, together with the candidate donors.
-The default behavior can be changed by
-setting \code{include_target = FALSE}. Note that if \code{x_name}
-contains one or more factors, then it is possible
-that the factor level of the target case is unique among all potential
-donors. In that case, the model can still be fit, but prediction will
-fail, and hence no matches will be found.
-
-If \code{break_ties == FALSE}, the function returns the first
-\code{nmatch} matches as they appear in the order of \code{data}.
-This method leads to an overuse of the first part of the data, and
-hence underestimates variability. The better option is to break ties
-randomly (the default).
+  If \code{break_ties == FALSE}, the function returns the first \code{nmatch}
+  matches as they appear in the order of \code{data}. This method leads to an
+  overuse of the first part of the data, and hence underestimates
+  variability. The better option is to break ties randomly (the default).
 }
 \examples{
 library("curvematching")
@@ -116,11 +122,11 @@ data[extract_matches(m), ]
 
 }
 \references{
-van Buuren, S. (2014). \emph{Curve matching: A data-driven technique to
-improve individual prediction of childhood growth}. Annals of Nutrition &
-Metabolism, 65(3), 227-233.
-van Buuren, S. (2012). \emph{Flexible imputation of missing data}.
-Boca Raton, FL: Chapman & Hall/CRC.
+van Buuren, S. (2014). \emph{Curve matching: A data-driven
+  technique to improve individual prediction of childhood growth}. Annals of
+  Nutrition & Metabolism, 65(3), 227-233. van Buuren, S. (2012).
+  \emph{Flexible imputation of missing data}. Boca Raton, FL: Chapman &
+  Hall/CRC.
 }
 \author{
 Stef van Buuren 2017
