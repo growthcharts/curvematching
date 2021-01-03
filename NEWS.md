@@ -1,3 +1,7 @@
+# curvematching 0.12.0
+
+* Adds blended distance matching function `match_bmd()`, which generalises the distance metric used for matching
+
 # curvematching 0.11.0
 
 * Replaces `substitute()` by tidyeval `enexpr()`
