@@ -1,71 +1,73 @@
-#' Calculates matches for a child by predictive mean matching
+#' Calculates matches for a child by blended distance matching
 #'
-#' Curve matching is a technology that aims to predict
-#' individual growth curves. The method finds persons similar to the
-#' target person, and learn the possible future course of growth
-#' from the realized curves of the matched individuals.
+#' Curve matching is a technology that aims to predict individual growth curves.
+#' The method finds persons similar to the target person, and learn the possible
+#' future course of growth from the realized curves of the matched individuals.
 #'
-#' The function finds \code{k} matches for an individual in the same data set
-#' by means of stratified predictive mean matching.
+#' The function finds \code{k} matches for an individual in the same data set by
+#' means of stratified predictive mean matching or nearest neighbour matching.
+#'
 #' @param data A \code{data.frame} or \code{tbl_df}.
 #' @param condition Logical expression defining the set of rows in \code{data}
-#'  for which matches will be sought. Missing values are taken as false.
-#'  If omitted, all rows will be successively taken as targets.
-#'  This can result in intensive computation if \code{nrow(data)} is large.
+#'   for which matches will be sought. Missing values are taken as false. If
+#'   omitted, all rows will be successively taken as targets. This can result in
+#'   intensive computation if \code{nrow(data)} is large.
 #' @param y_name A character vector containing the names of the dependent
-#' variables in \code{data}.
-#' @param x_name A character vector containing the names of predictive
-#' variables in \code{data} to will go into the linear part of the model.
+#'   variables in \code{data}.
+#' @param x_name A character vector containing the names of predictive variables
+#'   in \code{data} to will go into the linear part of the model.
 #' @param e_name A character vector containing the names of the variables for
-#' which the match should be exact.
+#'   which the match should be exact.
 #' @param t_name A character vector containing the names of the treatment
-#' variables in \code{data}. The current function will only fit the model to
-#' only the first element of \code{t_name}.
-#' @param subset Logical expression defining the set of rows taken
-#' from \code{data}. This subset is selected before any other calculations
-#' are made, and this can be used to trim down the size of the data in which
-#' matches are defined and sought.
+#'   variables in \code{data}. The current function will only fit the model to
+#'   only the first element of \code{t_name}.
+#' @param subset Logical expression defining the set of rows taken from
+#'   \code{data}. This subset is selected before any other calculations are
+#'   made, and this can be used to trim down the size of the data in which
+#'   matches are defined and sought.
 #' @param k Requested number of matches. The default is \code{k = 10}.
-#' @param break_ties A logical indicating whether ties should broken
-#'   randomly. The default (\code{TRUE}) breaks ties randomly.
+#' @param replace A logical that indicates whether to match with or without
+#'   replacement. The default is \code{FALSE}.
+#' @param blend An integer value between 0 and 1 that indicates the blend
+#'   between predictive mean matching with replacement (\code{1}) and euclidian
+#'   distance matching (\code{0}). The default is \code{1}.
+#' @param kappa A numeric value that serves as the sensitivity parameter for the
+#'   inverse distance weighting. Used when drawing with replacement. The default
+#'   is \code{3}.
+#' @param break_ties A logical indicating whether ties should broken randomly.
+#'   The default (\code{TRUE}) breaks ties randomly.
 #' @param allow_matched_targets A logical that indicates whether the non-active
-#'  target cases may be found as a match. The default is \code{TRUE}.
-#' @param include_target A logical that indicates whether the target case
-#' is included in the model. See details. The default is \code{TRUE}.
-#' @param replace A logical that indicates whether matches should be found with
-#' or without replacement. The default is \code{FALSE}.
-#' @param verbose A logical indicating whether diagnostic information should
-#' be printed.
+#'   target cases may be found as a match. The default is \code{TRUE}.
+#' @param include_target A logical that indicates whether the target case is
+#'   included in the model. See details. The default is \code{TRUE}.
+#' @param verbose A logical indicating whether diagnostic information should be
+#'   printed.
 #' @param \dots Arguments passed down to \code{match_pmm()}.
-#' @return An object of class \code{match_list} which can be post-processed
-#' by the \code{extract_matches} function to extract the row numbers in
-#' \code{data} of the matched children. The length
-#' of the list will be always equal to \code{m} if \code{replace == TRUE},
-#' but may be shorter if \code{replace == FALSE} if the donors are exhausted. The
-#' length is zero if no matches can be found.
+#' @return An object of class \code{match_list} which can be post-processed by
+#'   the \code{extract_matches} function to extract the row numbers in
+#'   \code{data} of the matched children. The length of the list will be always
+#'   equal to \code{m} if \code{replace == TRUE}, but may be shorter if
+#'   \code{replace == FALSE} if the donors are exhausted. The length is zero if
+#'   no matches can be found.
 #' @author Stef van Buuren 2017
-#' @details
-#' By default, if the outcome variabe of the target case is observed, then
-#' it used to fit the model, together with the candidate donors.
-#' The default behavior can be changed by
-#' setting \code{include_target = FALSE}. Note that if \code{x_name}
-#' contains one or more factors, then it is possible
-#' that the factor level of the target case is unique among all potential
-#' donors. In that case, the model can still be fit, but prediction will
-#' fail, and hence no matches will be found.
+#' @details By default, if the outcome variabe of the target case is observed,
+#'   then it used to fit the model, together with the candidate donors. The
+#'   default behavior can be changed by setting \code{include_target = FALSE}.
+#'   Note that if \code{x_name} contains one or more factors, then it is
+#'   possible that the factor level of the target case is unique among all
+#'   potential donors. In that case, the model can still be fit, but prediction
+#'   will fail, and hence no matches will be found.
 #'
-#' If \code{break_ties == FALSE}, the function returns the first
-#' \code{nmatch} matches as they appear in the order of \code{data}.
-#' This method leads to an overuse of the first part of the data, and
-#' hence underestimates variability. The better option is to break ties
-#' randomly (the default).
+#'   If \code{break_ties == FALSE}, the function returns the first \code{nmatch}
+#'   matches as they appear in the order of \code{data}. This method leads to an
+#'   overuse of the first part of the data, and hence underestimates
+#'   variability. The better option is to break ties randomly (the default).
 #'
-#' @references
-#' van Buuren, S. (2014). \emph{Curve matching: A data-driven technique to
-#' improve individual prediction of childhood growth}. Annals of Nutrition &
-#' Metabolism, 65(3), 227-233.
-#' van Buuren, S. (2012). \emph{Flexible imputation of missing data}.
-#' Boca Raton, FL: Chapman & Hall/CRC.
+#' @references van Buuren, S. (2014). \emph{Curve matching: A data-driven
+#'   technique to improve individual prediction of childhood growth}. Annals of
+#'   Nutrition & Metabolism, 65(3), 227-233. van Buuren, S. (2012).
+#'   \emph{Flexible imputation of missing data}. Boca Raton, FL: Chapman &
+#'   Hall/CRC.
 #' @examples
 #' library("curvematching")
 #' data <- datasets::ChickWeight
@@ -89,10 +91,12 @@ calculate_matches <- function(data,
                               t_name = character(),
                               subset = NULL,
                               k = 10,
+                              replace = FALSE,
+                              blend = 1,
                               break_ties = TRUE,
                               allow_matched_targets = TRUE,
                               include_target = TRUE,
-                              replace = FALSE,
+                              kappa = 3,
                               verbose = TRUE, ...) {
 
   equals_all <- function(x) {
@@ -200,12 +204,12 @@ calculate_matches <- function(data,
         matched <- augment %>%
           bind_rows(filter(xy, .data$candidate)) %>%
           group_by(!! mutate_call) %>%
-          do(.row = match_pmm(., y_name = yvar, x_name = x_name,
-                              k = k, break_ties = break_ties, ...)) %>%
+          do(.row = match_bdm(., y_name = yvar, x_name = x_name, k = k, replace = replace,
+                              blend = blend, break_ties = break_ties, kappa = kappa, ...)) %>%
           mutate(.by = TRUE)
       } else {
-        row <- match_pmm(xy, y_name = yvar, x_name = x_name, k = k,
-                         break_ties = break_ties, ...)
+        row <- match_bdm(xy, y_name = yvar, x_name = x_name, k = k, replace = replace,
+                         blend = blend, break_ties = break_ties, kappa = kappa, ...)
         matched <- tibble(.by = FALSE, .row = list(row))
       }
       l2[[iy]] <- matched
@@ -217,6 +221,109 @@ calculate_matches <- function(data,
   l1
 }
 
+# Blended distance matching
+match_bdm <- function(data, y_name, x_name, k, replace = TRUE, blend = 1,
+                      break_ties = TRUE, exclude_NA = FALSE, kappa = 3, ...) {
+  if (nrow(data) <= 1) return(no_match())
+
+  if (sum(data$active) > 1) stop("Too many active cases: ", sum(data$active))
+  if (sum(data$active) == 0) stop("No active case found.")
+  if (blend > 1 | blend < 0) stop("blend needs to be a value between 0 and 1.")
+
+  # keep only independent variables taking at least two values
+  # note: apparently, next statement cannot be nested in keep <- statement,
+  # perhaps to force evaluation of data
+  x <- select(data, !! x_name)
+  keep <- sapply(lapply(x, unique), length) >= 2
+  x_keep <- x_name[keep]
+  x_terms <- paste(c("1", x_keep), sep = "", collapse = " + ")
+  form <- as.formula(paste(y_name, "~", x_terms))
+  # obtain pmm weights
+  if (blend > 0){
+    # fit lm model
+    fit <- lm(form, data = data, na.action = na.exclude, ...)
+    if (exclude_NA) yhat <- fitted(fit, ...)
+    else yhat <- predict(fit, newdata = data, ...)
+    # predicted means
+    data <- mutate(data, yhat = yhat)
+    yhat_active <- yhat[data$active]
+    d <- abs(yhat - yhat_active)
+    d[data$active] <- NA
+
+    # add noise
+    f <- d > 0
+    a1 <- ifelse(any(f, na.rm = TRUE),
+                 min(d[f], na.rm = TRUE), 1)
+    if (replace) {
+      # with replacement
+      if (any(!f, na.rm = TRUE)) d <- d + a1
+      d <- d^kappa
+      l1 <- (1/d)/(sum(1/d, na.rm = TRUE))
+      l1[is.na(l1)] <- 0 # exclude NA
+    } else {
+      # no replacement
+      if (break_ties) d <- d + runif(length(d), 0, a1 / 10^10)
+      nmatch <- min(k, length(d) - 1L)  # large nmatch: take all
+      if (nmatch == 1L) return(as.integer(data$.row[which.min(d)]))
+      d_cut <- sort.int(d, partial = nmatch)[nmatch][1L]
+      l1 <- as.integer(data$.row[d <= d_cut & !is.na(d)][1L:nmatch])
+    }
+  } else {
+    # no pmm
+    l1 <- 0
+  }
+
+  # obtain distance weights
+  if (blend < 1){
+    xdata <- data[, x_keep]
+    # transform for euclidian distance calculations
+    xdata <- mutate_if(xdata, is.character, as.numeric)
+    xdata <- mutate_if(xdata, is.factor, as.numeric)
+    xdata <- mutate_if(xdata, is.numeric, function(x) (x-mean(x, na.rm = TRUE))/sd(x, na.rm = TRUE))
+    if (length(x_keep) < 1) xdata <- data.frame(rep(1, nrow(data)))
+
+    # neirest neighbours
+    d <- rowSums(sqrt((xdata - c(xdata[data$active, ]))^2))
+    d[data$active] <- NA
+    # add noise
+    f <- d > 0
+    a1 <- ifelse(any(f, na.rm = TRUE),
+                 min(d[f], na.rm = TRUE), 1)
+    if (replace) {
+      # with replacement
+      if (any(!f, na.rm = TRUE)) d <- d + a1
+      d <- d^kappa
+      l2 <- (1/d)/(sum(1/d, na.rm = TRUE))
+      l2[is.na(l2)] <- 0 # exclude NA
+    } else {
+      # no replacement
+      if (break_ties) d <- d + runif(length(d), 0, a1 / 10^10)
+      nmatch <- min(k, length(d) - 1L)  # large nmatch: take all
+      if (nmatch == 1L) return(as.integer(data$.row[which.min(d)]))
+      data$d <- d
+      d_cut <- sort.int(d, partial = nmatch)[nmatch][1L]
+      l2 <- as.integer(data$.row[d <= d_cut & !is.na(d)][1L:nmatch])
+    }
+  } else {
+    # no nn
+    l2 <- 0
+  }
+
+  if (replace) {
+    l <- (blend * l1) + ((1-blend) * l2)
+    # return matches
+    return(sample(1:length(l), size = k, prob = l, replace = TRUE))
+  } else {
+    # with replacement without blending as of now.
+    if (blend < 0.5){
+      return(l2)
+    } else{
+      return(l1)
+    }
+  }
+}
+
+# Match predictive mean matching (legacy)
 match_pmm <- function(data, y_name, x_name, k, break_ties = TRUE,
                       exclude_NA = FALSE, ...) {
   if (nrow(data) <= 1) return(no_match())
