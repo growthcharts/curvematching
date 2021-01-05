@@ -16,7 +16,7 @@ Imports:
 Suggests:
     testthat,
     knitr,
-    donorloader (>= 0.19.0)
+    donorloader (>= 0.20.0)
 Remotes:
   stefvanbuuren/donorloader
 LazyData: TRUE
