@@ -118,17 +118,16 @@ calculate_matches <- function(data,
     mutate(.row = 1:n())
 
   # restrict to subset if specified
-  subset_call <- enexpr(subset)
-  if (!is.null(subset_call)) data <- filter(data, !! subset_call)
+  if (!is.null(subset)) data <- filter(data, {{ subset }})
 
   # construct target variable
-  condition_call <- enexpr(condition)
-  data <- mutate(data, .target = !! condition_call) %>%
+  data <- data %>%
+    mutate(.target = {{ condition }}) %>%
     group_by(.data$.target) %>%
     mutate(.seqno = 1:n())
 
   if (!any(data$.target, na.rm = TRUE)) {
-    if (verbose) warning(paste("No rows conform to", quote(condition)))
+    if (verbose) warning("No target rows conform to condition.")
     return(no_match())
   }
 
@@ -168,7 +167,7 @@ calculate_matches <- function(data,
 
     # re-define candidate set according to allow_matched_targets flag
     if (allow_matched_targets)
-      data <- mutate(data, candidate = !active)
+      data <- mutate(data, candidate = !.data$active)
     else data <- mutate(data, candidate = !.data$.target)
 
     # trim candidate set by requiring exact matches on
@@ -177,7 +176,8 @@ calculate_matches <- function(data,
     cond <- equals_all(trimmed)
     if (length(cond) > 0) {
       cond <- paste0("candidate == TRUE & ", cond)
-      data <- mutate_(data, candidate = cond)
+      expr <- parse(text = cond)
+      data <- dplyr::mutate(data, candidate = eval(expr))
     }
 
     # loop over outcome names
@@ -188,7 +188,7 @@ calculate_matches <- function(data,
       yvar <- y_name[iy]
 
       # extract subset of candidates
-      xy <- filter(data, .data$candidate | active)
+      xy <- filter(data, .data$candidate | .data$active)
       if (!include_target) xy[xy$active, yvar] <- NA
 
       # split by treatment variables
