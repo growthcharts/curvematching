@@ -23,6 +23,15 @@ test_that("warns about rank-deficient fit", {
                                    e_name = c("Time")))
 })
 
+# select some row
+row <- 200
+m <- calculate_matches2(data, data[row, ],
+                        y_name = "weight",
+                        x_name = c("Chick", "Time"),
+                        k = 1)
+test_that("closest predictor is target row", {
+  expect_equal(extract_matches(m), row)})
+
 
 context("extract_matches()")
 set.seed(234)
