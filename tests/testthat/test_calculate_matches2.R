@@ -3,8 +3,8 @@ context("calculate_matches2")
 set.seed(234)
 data <- datasets::ChickWeight
 
-test_that("does not work for crappy name", {
-  expect_error(calculate_matches2(data, data[data$Time == 0, ], y_name = "sasa"))
+test_that("skips over crappy y_name", {
+  expect_silent(calculate_matches2(data, data[data$Time == 0, ], y_name = "sasa"))
   })
 
 test_that("returns proper length", {

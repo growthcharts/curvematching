@@ -115,7 +115,7 @@ calculate_matches2 <- function(donor,
     if (verbose) warning("No target rows in new_data.")
     return(no_match())
   }
-  if (k <= 0 || !length(y_name)) {
+  if (k <= 0 || !length(y_name) || !hasName(donor, y_name)) {
     return(no_match())
   }
 
