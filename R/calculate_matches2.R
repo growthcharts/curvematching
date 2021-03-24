@@ -98,7 +98,7 @@ calculate_matches2 <- function(donor,
     cv <- vector("character", length(x))
     for (j in 1:length(x)) {
       xj <- x[[j]]
-      if (is.factor(xj)) {
+      if (!is.numeric(xj)) {
         cv[j] <- paste0(names(x)[j], ' == "', as.character(xj), '"')
       } else {
         cv[j] <- paste0(names(x)[j], " == ", xj)
@@ -175,28 +175,34 @@ calculate_matches2 <- function(donor,
         augment <- slice(active, rep(1:n(), each = length(t_unique)))
         augment[, t_name] <- t_unique
 
-        # matched <- vector("list", length(t_unique))
-        # for (c in 1:nrow(augment)) {
-        #   active_trt <- augment[c, ]
-        #   trt <- t_unique[c]
-        #   donor_trt <- filter(donor, !!mutate_call == !!trt)
-        #   matched[[c]] <- match_bdm2(data = donor_trt,
-        #                              active = active_trt,
-        #                              y_name = yvar, x_name = x_name, k = k, replace = replace,
-        #                              blend = blend, break_ties = break_ties, kappa = kappa, ...
-        #   )
-        # }
+        # loop over all treatments
+        matched <- vector("list", length(t_unique))
+        for (c in 1:nrow(augment)) {
+          active_trt <- augment[c, ]
+          trt <- t_unique[c]
+          donor_trt <- filter(donor, !!mutate_call == !!trt)
+          matched[[c]] <- match_bdm2(data = donor_trt,
+                                     active = active_trt,
+                                     y_name = yvar, x_name = x_name, k = k, replace = replace,
+                                     blend = blend, break_ties = break_ties, kappa = kappa, ...)
+        }
+        # store
+        matched <- augment %>%
+          bind_rows(filter(xy, .data$candidate)) %>%
+          group_by(!!mutate_call) %>%
+          summarise(.row = !! matched) %>%
+          mutate(.by = TRUE)
 
         # this code isn't yet right, do not use t_name for now (SvB 22/3/2021)
-        matched <- augment %>%
-          bind_rows(filter(xy, .data$candidate))
-        matched <- matched %>%
-          group_by(!!mutate_call) %>%
-          do(.row = match_bdm2(., active = active,
-            y_name = yvar, x_name = x_name, k = k, replace = replace,
-            blend = blend, break_ties = break_ties, kappa = kappa, ...
-          )) %>%
-          mutate(.by = TRUE)
+        # matched <- augment %>%
+        #   bind_rows(filter(xy, .data$candidate))
+        # matched <- matched %>%
+        #   group_by(!!mutate_call) %>%
+        #   do(.row = match_bdm2(., active = active,
+        #     y_name = yvar, x_name = x_name, k = k, replace = replace,
+        #     blend = blend, break_ties = break_ties, kappa = kappa, ...
+        #   )) %>%
+        #   mutate(.by = TRUE)
       } else {
         row <- match_bdm2(xy, active = active,
           y_name = yvar, x_name = x_name, k = k, replace = replace,
