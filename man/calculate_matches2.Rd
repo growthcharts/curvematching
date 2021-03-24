@@ -2,11 +2,11 @@
 % Please edit documentation in R/calculate_matches2.R
 \name{calculate_matches2}
 \alias{calculate_matches2}
-\title{Calculates matches for a child by blended distance matching}
+\title{Calculates matches for one or more children by blended distance matching}
 \usage{
 calculate_matches2(
-  donor,
-  target,
+  data,
+  newdata,
   y_name = character(0L),
   x_name = character(0L),
   e_name = character(0L),
@@ -22,9 +22,11 @@ calculate_matches2(
 )
 }
 \arguments{
-\item{donor}{A \code{data.frame} or \code{tbl_df} with donor data}
+\item{data}{A \code{data.frame} or \code{tbl_df} with donor data. One row is
+one potential donor.}
 
-\item{target}{A \code{data.frame} or \code{tbl_df} with target data}
+\item{newdata}{A \code{data.frame} or \code{tbl_df} with data of children for
+which we seek matches. Every row corresponds to one child.}
 
 \item{y_name}{A character vector containing the names of the dependent
 variables in \code{data}.}
@@ -80,20 +82,20 @@ future course of growth from the realized curves of the matched individuals.
 }
 \details{
 The function finds \code{k} matches for an individual in the same data set by
-means of stratified predictive mean matching or nearest neighbour matching.
+means of stratified predictive mean matching or by nearest neighbour matching.
 
-By default, if the outcome variabe of the target case is observed,
-  then it used to fit the model, together with the candidate donors. The
-  default behavior can be changed by setting \code{include_target = FALSE}.
+
+  The procedure search for matches in \code{data} for each row
+  in \code{newdata}.
   Note that if \code{x_name} contains one or more factors, then it is
   possible that the factor level of the target case is unique among all
   potential donors. In that case, the model can still be fit, but prediction
   will fail, and hence no matches will be found.
 
-  If \code{break_ties == FALSE}, the function returns the first \code{nmatch}
-  matches as they appear in the order of \code{data}. This method leads to an
-  overuse of the first part of the data, and hence underestimates
-  variability. The better option is to break ties randomly (the default).
+  If \code{break_ties} is \code{FALSE}, the function returns the first \code{nmatch}
+  matches as they appear in the order of \code{data}. This method overuses
+  the first part of the data if there are ties, and hence may underestimate
+  variability. The default option is to break ties randomly.
 }
 \examples{
 library("curvematching")
@@ -102,7 +104,7 @@ data[543, ]
 
 # find matches for observation in row 543 for outcome weight
 m <- calculate_matches(data, Time == 0 & Chick == 48, y_name = "weight", x_name = c("Time", "Diet"))
-m2 <- calculate_matches2(data, target = data[543, ], y_name = "weight", x_name = c("Time", "Diet"))
+m2 <- calculate_matches2(data[-543, ], data[543, ], y_name = "weight", x_name = c("Time", "Diet"))
 
 # row numbers of matched cases
 extract_matches(m)
@@ -120,5 +122,5 @@ van Buuren, S. (2014). \emph{Curve matching: A data-driven
   Hall/CRC.
 }
 \author{
-Stef van Buuren 2017
+Stef van Buuren 2021
 }

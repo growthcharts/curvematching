@@ -35,7 +35,7 @@ test_that("closest predictor is target row", {
 
 context("extract_matches()")
 set.seed(234)
-z0 <- calculate_matches2(donor = 1)
+z0 <- calculate_matches2(1)
 
 test_that("return integer(0) if there are matches", {
   expect_equal(length(extract_matches(z0)), 0L)

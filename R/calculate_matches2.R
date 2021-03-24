@@ -1,14 +1,16 @@
-#' Calculates matches for a child by blended distance matching
+#' Calculates matches for one or more children by blended distance matching
 #'
 #' Curve matching is a technology that aims to predict individual growth curves.
 #' The method finds persons similar to the target person, and learn the possible
 #' future course of growth from the realized curves of the matched individuals.
 #'
 #' The function finds \code{k} matches for an individual in the same data set by
-#' means of stratified predictive mean matching or nearest neighbour matching.
+#' means of stratified predictive mean matching or by nearest neighbour matching.
 #'
-#' @param donor A \code{data.frame} or \code{tbl_df} with donor data
-#' @param target A \code{data.frame} or \code{tbl_df} with target data
+#' @param data A \code{data.frame} or \code{tbl_df} with donor data. One row is
+#' one potential donor.
+#' @param newdata A \code{data.frame} or \code{tbl_df} with data of children for
+#'  which we seek matches. Every row corresponds to one child.
 #' @param y_name A character vector containing the names of the dependent
 #'   variables in \code{data}.
 #' @param x_name A character vector containing the names of predictive variables
@@ -42,19 +44,19 @@
 #'   equal to \code{m} if \code{replace == TRUE}, but may be shorter if
 #'   \code{replace == FALSE} if the donors are exhausted. The length is zero if
 #'   no matches can be found.
-#' @author Stef van Buuren 2017
-#' @details By default, if the outcome variabe of the target case is observed,
-#'   then it used to fit the model, together with the candidate donors. The
-#'   default behavior can be changed by setting \code{include_target = FALSE}.
+#' @author Stef van Buuren 2021
+#' @details
+#'   The procedure search for matches in \code{data} for each row
+#'   in \code{newdata}.
 #'   Note that if \code{x_name} contains one or more factors, then it is
 #'   possible that the factor level of the target case is unique among all
 #'   potential donors. In that case, the model can still be fit, but prediction
 #'   will fail, and hence no matches will be found.
 #'
-#'   If \code{break_ties == FALSE}, the function returns the first \code{nmatch}
-#'   matches as they appear in the order of \code{data}. This method leads to an
-#'   overuse of the first part of the data, and hence underestimates
-#'   variability. The better option is to break ties randomly (the default).
+#'   If \code{break_ties} is \code{FALSE}, the function returns the first \code{nmatch}
+#'   matches as they appear in the order of \code{data}. This method overuses
+#'   the first part of the data if there are ties, and hence may underestimate
+#'   variability. The default option is to break ties randomly.
 #'
 #' @references van Buuren, S. (2014). \emph{Curve matching: A data-driven
 #'   technique to improve individual prediction of childhood growth}. Annals of
@@ -68,7 +70,7 @@
 #'
 #' # find matches for observation in row 543 for outcome weight
 #' m <- calculate_matches(data, Time == 0 & Chick == 48, y_name = "weight", x_name = c("Time", "Diet"))
-#' m2 <- calculate_matches2(data, target = data[543, ], y_name = "weight", x_name = c("Time", "Diet"))
+#' m2 <- calculate_matches2(data[-543, ], data[543, ], y_name = "weight", x_name = c("Time", "Diet"))
 #'
 #' # row numbers of matched cases
 #' extract_matches(m)
@@ -78,8 +80,8 @@
 #' data[extract_matches(m), ]
 #' data[extract_matches(m2), ]
 #' @export
-calculate_matches2 <- function(donor,
-                               target,
+calculate_matches2 <- function(data,
+                               newdata,
                                y_name = character(0L),
                                x_name = character(0L),
                                e_name = character(0L),
@@ -108,38 +110,38 @@ calculate_matches2 <- function(donor,
   }
 
   # validity checks
-  if (!is.data.frame(donor)) {
+  if (!is.data.frame(data)) {
     return(no_match())
   }
-  if (!nrow(target) || !is.data.frame(target)) {
-    if (verbose) warning("No target rows in new_data.")
+  if (!nrow(newdata) || !is.data.frame(newdata)) {
+    if (verbose) warning("No rows in newdata.")
     return(no_match())
   }
-  if (k <= 0 || !length(y_name) || !hasName(donor, y_name)) {
+  if (k <= 0 || !length(y_name) || !hasName(data, y_name)) {
     return(no_match())
   }
 
   # model variables
   vars <- intersect(unique(c(y_name, x_name, e_name, t_name)),
-                    names(donor))
+                    names(data))
 
   # preserve donor row number before subset
-  donor <- donor %>%
+  data <- data %>%
     mutate(.row = 1L:n()) %>%
     filter({{subset}}) %>%
     select(all_of(c(".row", !! vars)))
 
-  target <- target %>%
+  newdata <- newdata %>%
     mutate(.row = 1L:n()) %>%
     select(all_of(c(".row", !! vars)))
 
-  # loop over target
-  l1 <- vector("list", nrow(target))
-  names(l1) <- as.vector(unlist(select(target, .data$.row)))
-  # matches <- matrix(NA_real_, nrow = nrow(target), ncol = k)
-  for (i in 1L:nrow(target)) {
+  # loop over target children
+  l1 <- vector("list", nrow(newdata))
+  names(l1) <- as.vector(unlist(select(newdata, .data$.row)))
+  # matches <- matrix(NA_real_, nrow = nrow(newdata), ncol = k)
+  for (i in 1L:nrow(newdata)) {
     # define active case
-    active <- slice(target, i)
+    active <- slice(newdata, i)
 
     # trim candidate set by requiring exact matches on
     # variables listed in `e_name`
@@ -147,10 +149,10 @@ calculate_matches2 <- function(donor,
     cond <- equals_all(trimmed)
     if (length(cond)) {
       expr <- parse(text = cond)
-      donor <- donor %>%
+      data <- data %>%
         mutate(candidate = eval(expr))
     } else {
-      donor <- donor %>%
+      data <- data %>%
         mutate(candidate = TRUE)
     }
 
@@ -162,7 +164,7 @@ calculate_matches2 <- function(donor,
       yvar <- y_name[iy]
 
       # extract subset of candidates
-      xy <- filter(donor, .data$candidate)
+      xy <- filter(data, .data$candidate)
 
       # split by treatment variables
       if (length(t_name) > 0) {
@@ -180,8 +182,8 @@ calculate_matches2 <- function(donor,
         for (c in 1:nrow(augment)) {
           active_trt <- augment[c, ]
           trt <- t_unique[c]
-          donor_trt <- filter(donor, !!mutate_call == !!trt)
-          matched[[c]] <- match_bdm2(data = donor_trt,
+          data_trt <- filter(data, !!mutate_call == !!trt)
+          matched[[c]] <- match_bdm2(data = data_trt,
                                      active = active_trt,
                                      y_name = yvar, x_name = x_name, k = k, replace = replace,
                                      blend = blend, break_ties = break_ties, kappa = kappa, ...)
@@ -214,7 +216,7 @@ calculate_matches2 <- function(donor,
     }
     l1[[i]] <- l2
   }
-  # names(l1) <- target_names
+  # names(l1) <- child_names
   class(l1) <- "match_list"
   l1
 }
