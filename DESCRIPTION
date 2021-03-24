@@ -16,10 +16,7 @@ Imports:
     utils
 Suggests:
     testthat,
-    knitr,
-    donorloader (>= 0.20.0)
-Remotes:
-  stefvanbuuren/donorloader
+    knitr
 LazyData: TRUE
 Encoding: UTF-8
 License: file LICENSE
