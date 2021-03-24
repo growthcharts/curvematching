@@ -119,7 +119,6 @@ extract_matches(m)
 
 # data of matched cases
 data[extract_matches(m), ]
-
 }
 \references{
 van Buuren, S. (2014). \emph{Curve matching: A data-driven

@@ -5,7 +5,7 @@ data <- datasets::ChickWeight
 
 test_that("skips over crappy y_name", {
   expect_silent(calculate_matches2(data, data[data$Time == 0, ], y_name = "sasa"))
-  })
+})
 
 test_that("returns proper length", {
   expect_equal(length(calculate_matches2(data, data[data$Time == 0 & data$Chick == 48, ], y_name = "weight")), 1)
@@ -18,19 +18,22 @@ test_that("warns if no targets are found", {
 
 test_that("warns about rank-deficient fit", {
   expect_warning(calculate_matches2(data, data[data$Chick == 48 & data$Time == 0, ],
-                                   y_name = "weight",
-                                   x_name = c("Chick","Diet"),
-                                   e_name = c("Time")))
+    y_name = "weight",
+    x_name = c("Chick", "Diet"),
+    e_name = c("Time")
+  ))
 })
 
 # select some row
 row <- 200
 m <- calculate_matches2(data, data[row, ],
-                        y_name = "weight",
-                        x_name = c("Chick", "Time"),
-                        k = 1)
+  y_name = "weight",
+  x_name = c("Chick", "Time"),
+  k = 1
+)
 test_that("closest predictor is target row", {
-  expect_equal(extract_matches(m), row)})
+  expect_equal(extract_matches(m), row)
+})
 
 
 context("extract_matches()")
@@ -77,4 +80,3 @@ m2 <- calculate_matches2(data, data[543, ], subset = !rownames(data) %in% "543",
 test_that("calculate_matches() and calculate_matches2() return same matches", {
   expect_equal(extract_matches(m), extract_matches(m2))
 })
-

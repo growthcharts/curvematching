@@ -68,17 +68,20 @@
 #' data[1, ]
 #'
 #' # find matches for observation in row 1
-#' m1 <- calculate_matches2(data, data[1, ], subset = !rownames(data) %in% "1",
-#'     y_name = "weight", x_name = c("Time", "Diet"))
+#' m1 <- calculate_matches2(data, data[1, ],
+#'   subset = !rownames(data) %in% "1",
+#'   y_name = "weight", x_name = c("Time", "Diet")
+#' )
 #'
 #' # data of matched cases (may vary because of tie breaking)
 #' data[extract_matches(m1), ]
 #'
 #' # without tie breaking, we pick the earlier rows (not recommended)
-#' m2 <- calculate_matches2(data, data[1, ], subset = !rownames(data) %in% "1",
-#'      y_name = "weight", x_name = c("Time", "Diet"), break_ties = FALSE)
+#' m2 <- calculate_matches2(data, data[1, ],
+#'   subset = !rownames(data) %in% "1",
+#'   y_name = "weight", x_name = c("Time", "Diet"), break_ties = FALSE
+#' )
 #' data[extract_matches(m2), ]
-#'
 #' @export
 calculate_matches2 <- function(data,
                                newdata,
@@ -122,18 +125,20 @@ calculate_matches2 <- function(data,
   }
 
   # model variables
-  vars <- intersect(unique(c(y_name, x_name, e_name, t_name)),
-                    names(data))
+  vars <- intersect(
+    unique(c(y_name, x_name, e_name, t_name)),
+    names(data)
+  )
 
   # preserve donor row number before subset
   data <- data %>%
     mutate(.row = 1L:n()) %>%
-    filter({{subset}}) %>%
-    select(all_of(c(".row", !! vars)))
+    filter({{ subset }}) %>%
+    select(all_of(c(".row", !!vars)))
 
   newdata <- newdata %>%
     mutate(.row = 1L:n()) %>%
-    select(all_of(c(".row", !! vars)))
+    select(all_of(c(".row", !!vars)))
 
   # loop over target children
   l1 <- vector("list", nrow(newdata))
@@ -144,7 +149,7 @@ calculate_matches2 <- function(data,
 
     # trim candidate set by requiring exact matches on
     # variables listed in `e_name`
-    trimmed <- select(active, !! e_name)
+    trimmed <- select(active, !!e_name)
     cond <- equals_all(trimmed)
     if (length(cond)) {
       expr <- parse(text = cond)
@@ -182,16 +187,18 @@ calculate_matches2 <- function(data,
           active_trt <- augment[c, ]
           trt <- t_unique[c]
           data_trt <- filter(data, !!mutate_call == !!trt)
-          matched[[c]] <- match_bdm2(data = data_trt,
-                                     active = active_trt,
-                                     y_name = yvar, x_name = x_name, k = k, replace = replace,
-                                     blend = blend, break_ties = break_ties, kappa = kappa, ...)
+          matched[[c]] <- match_bdm2(
+            data = data_trt,
+            active = active_trt,
+            y_name = yvar, x_name = x_name, k = k, replace = replace,
+            blend = blend, break_ties = break_ties, kappa = kappa, ...
+          )
         }
         # store
         matched <- augment %>%
           bind_rows(filter(xy, .data$candidate)) %>%
           group_by(!!mutate_call) %>%
-          summarise(.row = !! matched) %>%
+          summarise(.row = !!matched) %>%
           mutate(.by = TRUE)
 
         # this code isn't yet right, do not use t_name for now (SvB 22/3/2021)
@@ -205,7 +212,8 @@ calculate_matches2 <- function(data,
         #   )) %>%
         #   mutate(.by = TRUE)
       } else {
-        row <- match_bdm2(xy, active = active,
+        row <- match_bdm2(xy,
+          active = active,
           y_name = yvar, x_name = x_name, k = k, replace = replace,
           blend = blend, break_ties = break_ties, kappa = kappa, ...
         )
@@ -222,26 +230,31 @@ calculate_matches2 <- function(data,
 
 # Blended distance matching
 match_bdm2 <- function(data, active, y_name, x_name, k, replace = TRUE, blend = 1,
-                      break_ties = TRUE, exclude_NA = FALSE, kappa = 3, ...) {
-  if (nrow(data) <= 0L) return(no_match())
+                       break_ties = TRUE, exclude_NA = FALSE, kappa = 3, ...) {
+  if (nrow(data) <= 0L) {
+    return(no_match())
+  }
   if (nrow(active) != 1L) stop("Argument active not one row.")
   if (blend > 1 | blend < 0) stop("blend needs to be a value between 0 and 1.")
 
   # keep only independent variables taking at least two values
   # note: apparently, next statement cannot be nested in keep <- statement,
   # perhaps to force evaluation of data
-  x <- select(data, !! x_name)
+  x <- select(data, !!x_name)
   keep <- sapply(lapply(x, unique), length) >= 2
   x_keep <- x_name[keep]
   x_terms <- paste(c("1", x_keep), sep = "", collapse = " + ")
   form <- as.formula(paste(y_name, "~", x_terms))
 
   # obtain pmm weights
-  if (blend > 0){
+  if (blend > 0) {
     # fit lm model
     fit <- lm(form, data = data, na.action = na.exclude, ...)
-    if (exclude_NA) yhat <- fitted(fit, ...)
-    else yhat <- predict(fit, newdata = data, ...)
+    if (exclude_NA) {
+      yhat <- fitted(fit, ...)
+    } else {
+      yhat <- predict(fit, newdata = data, ...)
+    }
 
     # predicted means
     yhat_active <- predict(fit, newdata = active, ...)
@@ -250,18 +263,21 @@ match_bdm2 <- function(data, active, y_name, x_name, k, replace = TRUE, blend = 
     # add noise
     f <- d > 0
     a1 <- ifelse(any(f, na.rm = TRUE),
-                 min(d[f], na.rm = TRUE), 1)
+      min(d[f], na.rm = TRUE), 1
+    )
     if (replace) {
       # with replacement
       if (any(!f, na.rm = TRUE)) d <- d + a1
       d <- d^kappa
-      l1 <- (1/d)/(sum(1/d, na.rm = TRUE))
+      l1 <- (1 / d) / (sum(1 / d, na.rm = TRUE))
       l1[is.na(l1)] <- 0 # exclude NA
     } else {
       # no replacement
       if (break_ties) d <- d + runif(length(d), 0, a1 / 10^10)
-      nmatch <- min(k, length(d) - 1L)  # large nmatch: take all
-      if (nmatch == 1L) return(as.integer(data$.row[which.min(d)]))
+      nmatch <- min(k, length(d) - 1L) # large nmatch: take all
+      if (nmatch == 1L) {
+        return(as.integer(data$.row[which.min(d)]))
+      }
       d_cut <- sort.int(d, partial = nmatch)[nmatch][1L]
       l1 <- as.integer(data$.row[d <= d_cut & !is.na(d)][1L:nmatch])
     }
@@ -280,10 +296,8 @@ match_bdm2 <- function(data, active, y_name, x_name, k, replace = TRUE, blend = 
     # with replacement without blending as of now.
     if (blend < 0.5) {
       return(l2)
-    } else{
+    } else {
       return(l1)
     }
   }
 }
-
-

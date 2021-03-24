@@ -11,14 +11,16 @@ test_that("returns proper length", {
 
 test_that("warns if no targets are found", {
   expect_warning(calculate_matches(data, Time == 0 & Chick == 2 & Diet == 2,
-                                   y_name = "weight"))
+    y_name = "weight"
+  ))
 })
 
 test_that("warns about rank-deficient fit", {
   expect_warning(calculate_matches(data, Chick == 48 & Time == 0,
-                                   y_name = "weight",
-                                   x_name = c("Chick","Diet"),
-                                   e_name = c("Time")))
+    y_name = "weight",
+    x_name = c("Chick", "Diet"),
+    e_name = c("Time")
+  ))
 })
 
 
@@ -26,21 +28,26 @@ context("extract_matches()")
 set.seed(234)
 z0 <- calculate_matches(data, Time == 0, y_name = "sasa")
 z10 <- calculate_matches(data, Time == 0 & Chick == 48,
-                       y_name = c("weight", "Time"), t_name = "Diet")
+  y_name = c("weight", "Time"), t_name = "Diet"
+)
 
 test_that("return integer(0) if there are matches", {
   expect_equal(length(extract_matches(z0)), 0L)
 })
 
 test_that("returns vector of 10 row indices", {
-  expect_equal(extract_matches(z10, y_name = "Time", t_name = "Diet", c_name = "3"),
-               c(342, 369, 375, 411, 414, 423, 428, 438, 457, 459))
+  expect_equal(
+    extract_matches(z10, y_name = "Time", t_name = "Diet", c_name = "3"),
+    c(342, 369, 375, 411, 414, 423, 428, 438, 457, 459)
+  )
 })
 
 z <- calculate_matches(data, Chick == 2, y_name = c("weight", "Time"))
 test_that("returns vector of 10 row indices", {
-  expect_equal(extract_matches(z, i_name = "23", y_name = "Time"),
-               c(128, 167, 243, 244, 245, 299, 407, 420, 472, 494))
+  expect_equal(
+    extract_matches(z, i_name = "23", y_name = "Time"),
+    c(128, 167, 243, 244, 245, 299, 407, 420, 472, 494)
+  )
 })
 
 #

@@ -29,7 +29,9 @@ extract_matches <- function(matches,
                             c_name = character(0)) {
   if (!inherits(matches, "match_list")) stop("Argument `matches` not of class `match_list`.")
 
-  if (length(matches) == 0) return(integer(0))
+  if (length(matches) == 0) {
+    return(integer(0))
+  }
 
   found <- i_name %in% names(matches)
   if (any(!found)) {
@@ -47,7 +49,9 @@ extract_matches <- function(matches,
   # any treatment parameters and return first row
   tab <- matches[[i_name]][[y_name]]
   has_by <- tab[1, ".by"]
-  if (!has_by) return(as.vector(unlist(tab[1, ".row"])))
+  if (!has_by) {
+    return(as.vector(unlist(tab[1, ".row"])))
+  }
 
   # handle treatment selection: t_name and c_name
   if (length(t_name) == 0) {

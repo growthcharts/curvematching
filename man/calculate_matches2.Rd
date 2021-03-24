@@ -101,17 +101,20 @@ data <- datasets::ChickWeight
 data[1, ]
 
 # find matches for observation in row 1
-m1 <- calculate_matches2(data, data[1, ], subset = !rownames(data) \%in\% "1",
-    y_name = "weight", x_name = c("Time", "Diet"))
+m1 <- calculate_matches2(data, data[1, ],
+  subset = !rownames(data) \%in\% "1",
+  y_name = "weight", x_name = c("Time", "Diet")
+)
 
 # data of matched cases (may vary because of tie breaking)
 data[extract_matches(m1), ]
 
 # without tie breaking, we pick the earlier rows (not recommended)
-m2 <- calculate_matches2(data, data[1, ], subset = !rownames(data) \%in\% "1",
-     y_name = "weight", x_name = c("Time", "Diet"), break_ties = FALSE)
+m2 <- calculate_matches2(data, data[1, ],
+  subset = !rownames(data) \%in\% "1",
+  y_name = "weight", x_name = c("Time", "Diet"), break_ties = FALSE
+)
 data[extract_matches(m2), ]
-
 }
 \references{
 van Buuren, S. (2014). \emph{Curve matching: A data-driven

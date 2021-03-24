@@ -81,7 +81,6 @@
 #'
 #' # data of matched cases
 #' data[extract_matches(m), ]
-#'
 #' @export
 calculate_matches <- function(data,
                               condition,
@@ -98,20 +97,26 @@ calculate_matches <- function(data,
                               include_target = TRUE,
                               kappa = 3,
                               verbose = TRUE, ...) {
-
   equals_all <- function(x) {
-    if (is.null(names(x)) | length(x) == 0) return(character(0))
+    if (is.null(names(x)) | length(x) == 0) {
+      return(character(0))
+    }
     cv <- vector("character", length(x))
     for (j in 1:length(x)) {
       xj <- x[[j]]
-      if (is.factor(xj)) cv[j] <- paste0(names(x)[j], ' == "', as.character(xj), '"')
-      else cv[j] <- paste0(names(x)[j], ' == ', xj)
+      if (is.factor(xj)) {
+        cv[j] <- paste0(names(x)[j], ' == "', as.character(xj), '"')
+      } else {
+        cv[j] <- paste0(names(x)[j], " == ", xj)
+      }
     }
     paste0(cv, collapse = " & ")
   }
 
   # check input
-  if (!is.data.frame(data)) return(no_match())
+  if (!is.data.frame(data)) {
+    return(no_match())
+  }
 
   # append unique row id
   data <- data %>%
@@ -147,13 +152,14 @@ calculate_matches <- function(data,
   t_name <- t_name[t_name %in% names(data)]
 
   # exception handlers
-  if (k <= 0 || length(y_name) == 0)
+  if (k <= 0 || length(y_name) == 0) {
     return(no_match())
+  }
 
   # select active variables
   sys <- c(".row", ".target", ".seqno")
   var_names <- unique(c(sys, y_name, x_name, e_name, t_name))
-  data <- select(data, !! var_names)
+  data <- select(data, !!var_names)
 
   # loop over tgts
   l1 <- vector("list", nt)
@@ -166,13 +172,15 @@ calculate_matches <- function(data,
     # target_names[i] <- select(active, ".row")
 
     # re-define candidate set according to allow_matched_targets flag
-    if (allow_matched_targets)
+    if (allow_matched_targets) {
       data <- mutate(data, candidate = !.data$active)
-    else data <- mutate(data, candidate = !.data$.target)
+    } else {
+      data <- mutate(data, candidate = !.data$.target)
+    }
 
     # trim candidate set by requiring exact matches on
     # variables listed in `e_name`
-    trimmed <- select(active, !! e_name)
+    trimmed <- select(active, !!e_name)
     cond <- equals_all(trimmed)
     if (length(cond) > 0) {
       cond <- paste0("candidate == TRUE & ", cond)
@@ -198,18 +206,22 @@ calculate_matches <- function(data,
         t_name <- t_name[[1]]
         # t_name_list <- as.list(t_name)
         t_unique <- unique(xy[, t_name])
-        mutate_call <- quo(!! sym(t_name))
+        mutate_call <- quo(!!sym(t_name))
         augment <- slice(active, rep(1:n(), each = nrow(t_unique)))
         augment[, t_name] <- t_unique
         matched <- augment %>%
           bind_rows(filter(xy, .data$candidate)) %>%
-          group_by(!! mutate_call) %>%
-          do(.row = match_bdm(., y_name = yvar, x_name = x_name, k = k, replace = replace,
-                              blend = blend, break_ties = break_ties, kappa = kappa, ...)) %>%
+          group_by(!!mutate_call) %>%
+          do(.row = match_bdm(.,
+            y_name = yvar, x_name = x_name, k = k, replace = replace,
+            blend = blend, break_ties = break_ties, kappa = kappa, ...
+          )) %>%
           mutate(.by = TRUE)
       } else {
-        row <- match_bdm(xy, y_name = yvar, x_name = x_name, k = k, replace = replace,
-                         blend = blend, break_ties = break_ties, kappa = kappa, ...)
+        row <- match_bdm(xy,
+          y_name = yvar, x_name = x_name, k = k, replace = replace,
+          blend = blend, break_ties = break_ties, kappa = kappa, ...
+        )
         matched <- tibble(.by = FALSE, .row = list(row))
       }
       l2[[iy]] <- matched
@@ -224,7 +236,9 @@ calculate_matches <- function(data,
 # Blended distance matching
 match_bdm <- function(data, y_name, x_name, k, replace = TRUE, blend = 1,
                       break_ties = TRUE, exclude_NA = FALSE, kappa = 3, ...) {
-  if (nrow(data) <= 1) return(no_match())
+  if (nrow(data) <= 1) {
+    return(no_match())
+  }
 
   if (sum(data$active) > 1) stop("Too many active cases: ", sum(data$active))
   if (sum(data$active) == 0) stop("No active case found.")
@@ -233,17 +247,20 @@ match_bdm <- function(data, y_name, x_name, k, replace = TRUE, blend = 1,
   # keep only independent variables taking at least two values
   # note: apparently, next statement cannot be nested in keep <- statement,
   # perhaps to force evaluation of data
-  x <- select(data, !! x_name)
+  x <- select(data, !!x_name)
   keep <- sapply(lapply(x, unique), length) >= 2
   x_keep <- x_name[keep]
   x_terms <- paste(c("1", x_keep), sep = "", collapse = " + ")
   form <- as.formula(paste(y_name, "~", x_terms))
   # obtain pmm weights
-  if (blend > 0){
+  if (blend > 0) {
     # fit lm model
     fit <- lm(form, data = data, na.action = na.exclude, ...)
-    if (exclude_NA) yhat <- fitted(fit, ...)
-    else yhat <- predict(fit, newdata = data, ...)
+    if (exclude_NA) {
+      yhat <- fitted(fit, ...)
+    } else {
+      yhat <- predict(fit, newdata = data, ...)
+    }
     # predicted means
     data <- mutate(data, yhat = yhat)
     yhat_active <- yhat[data$active]
@@ -253,18 +270,21 @@ match_bdm <- function(data, y_name, x_name, k, replace = TRUE, blend = 1,
     # add noise
     f <- d > 0
     a1 <- ifelse(any(f, na.rm = TRUE),
-                 min(d[f], na.rm = TRUE), 1)
+      min(d[f], na.rm = TRUE), 1
+    )
     if (replace) {
       # with replacement
       if (any(!f, na.rm = TRUE)) d <- d + a1
       d <- d^kappa
-      l1 <- (1/d)/(sum(1/d, na.rm = TRUE))
+      l1 <- (1 / d) / (sum(1 / d, na.rm = TRUE))
       l1[is.na(l1)] <- 0 # exclude NA
     } else {
       # no replacement
       if (break_ties) d <- d + runif(length(d), 0, a1 / 10^10)
-      nmatch <- min(k, length(d) - 1L)  # large nmatch: take all
-      if (nmatch == 1L) return(as.integer(data$.row[which.min(d)]))
+      nmatch <- min(k, length(d) - 1L) # large nmatch: take all
+      if (nmatch == 1L) {
+        return(as.integer(data$.row[which.min(d)]))
+      }
       d_cut <- sort.int(d, partial = nmatch)[nmatch][1L]
       l1 <- as.integer(data$.row[d <= d_cut & !is.na(d)][1L:nmatch])
     }
@@ -274,12 +294,12 @@ match_bdm <- function(data, y_name, x_name, k, replace = TRUE, blend = 1,
   }
 
   # obtain distance weights
-  if (blend < 1){
+  if (blend < 1) {
     xdata <- data[, x_keep]
     # transform for euclidian distance calculations
     xdata <- mutate_if(xdata, is.character, as.numeric)
     xdata <- mutate_if(xdata, is.factor, as.numeric)
-    xdata <- mutate_if(xdata, is.numeric, function(x) (x-mean(x, na.rm = TRUE))/sd(x, na.rm = TRUE))
+    xdata <- mutate_if(xdata, is.numeric, function(x) (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE))
     if (length(x_keep) < 1) xdata <- data.frame(rep(1, nrow(data)))
 
     # neirest neighbours
@@ -288,18 +308,21 @@ match_bdm <- function(data, y_name, x_name, k, replace = TRUE, blend = 1,
     # add noise
     f <- d > 0
     a1 <- ifelse(any(f, na.rm = TRUE),
-                 min(d[f], na.rm = TRUE), 1)
+      min(d[f], na.rm = TRUE), 1
+    )
     if (replace) {
       # with replacement
       if (any(!f, na.rm = TRUE)) d <- d + a1
       d <- d^kappa
-      l2 <- (1/d)/(sum(1/d, na.rm = TRUE))
+      l2 <- (1 / d) / (sum(1 / d, na.rm = TRUE))
       l2[is.na(l2)] <- 0 # exclude NA
     } else {
       # no replacement
       if (break_ties) d <- d + runif(length(d), 0, a1 / 10^10)
-      nmatch <- min(k, length(d) - 1L)  # large nmatch: take all
-      if (nmatch == 1L) return(as.integer(data$.row[which.min(d)]))
+      nmatch <- min(k, length(d) - 1L) # large nmatch: take all
+      if (nmatch == 1L) {
+        return(as.integer(data$.row[which.min(d)]))
+      }
       data$d <- d
       d_cut <- sort.int(d, partial = nmatch)[nmatch][1L]
       l2 <- as.integer(data$.row[d <= d_cut & !is.na(d)][1L:nmatch])
@@ -310,14 +333,14 @@ match_bdm <- function(data, y_name, x_name, k, replace = TRUE, blend = 1,
   }
 
   if (replace) {
-    l <- (blend * l1) + ((1-blend) * l2)
+    l <- (blend * l1) + ((1 - blend) * l2)
     # return matches
     return(sample(1:length(l), size = k, prob = l, replace = TRUE))
   } else {
     # with replacement without blending as of now.
-    if (blend < 0.5){
+    if (blend < 0.5) {
       return(l2)
-    } else{
+    } else {
       return(l1)
     }
   }
@@ -326,7 +349,9 @@ match_bdm <- function(data, y_name, x_name, k, replace = TRUE, blend = 1,
 # Match predictive mean matching (legacy)
 match_pmm <- function(data, y_name, x_name, k, break_ties = TRUE,
                       exclude_NA = FALSE, ...) {
-  if (nrow(data) <= 1) return(no_match())
+  if (nrow(data) <= 1) {
+    return(no_match())
+  }
 
   if (sum(data$active) > 1) stop("Too many active cases: ", sum(data$active))
   if (sum(data$active) == 0) stop("No active case found.")
@@ -334,7 +359,7 @@ match_pmm <- function(data, y_name, x_name, k, break_ties = TRUE,
   # keep only independent variables taking at least two values
   # note: apparently, next statement cannot be nested in keep <- statement,
   # perhaps to force evaluation of data
-  x <- select(data, !! x_name)
+  x <- select(data, !!x_name)
   keep <- sapply(lapply(x, unique), length) >= 2
   x_keep <- x_name[keep]
   x_terms <- paste(c("1", x_keep), sep = "", collapse = " + ")
@@ -342,8 +367,11 @@ match_pmm <- function(data, y_name, x_name, k, break_ties = TRUE,
 
   # fit model, and estimate prediction
   fit <- lm(form, data = data, na.action = na.exclude, ...)
-  if (exclude_NA) yhat <- fitted(fit, ...)
-  else yhat <- predict(fit, newdata = data, ...)
+  if (exclude_NA) {
+    yhat <- fitted(fit, ...)
+  } else {
+    yhat <- predict(fit, newdata = data, ...)
+  }
   data <- mutate(data, yhat = yhat)
   yhat_active <- yhat[data$active]
 
@@ -353,11 +381,14 @@ match_pmm <- function(data, y_name, x_name, k, break_ties = TRUE,
   # add little noise to break ties
   f <- d > 0
   a1 <- ifelse(any(f, na.rm = TRUE),
-               min(d[f], na.rm = TRUE), 1)
+    min(d[f], na.rm = TRUE), 1
+  )
   if (break_ties) d <- d + runif(length(d), 0, a1 / 10^10)
 
-  nmatch <- min(k, length(d) - 1L)  # large nmatch: take all
-  if (nmatch == 1L) return(as.integer(data$.row[which.min(d)]))
+  nmatch <- min(k, length(d) - 1L) # large nmatch: take all
+  if (nmatch == 1L) {
+    return(as.integer(data$.row[which.min(d)]))
+  }
   d_cut <- sort.int(d, partial = nmatch)[nmatch][1L]
   as.integer(data$.row[d <= d_cut & !is.na(d)][1L:nmatch])
 }
@@ -375,5 +406,3 @@ no_match <- function(mode = "list") {
   class(z) <- "match_list"
   z
 }
-
-
