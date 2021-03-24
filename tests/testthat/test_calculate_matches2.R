@@ -66,3 +66,15 @@ test_that("return integer(0) if there are matches", {
 # # extract_matches(z)
 # # extract_matches(z, i_name = "23", y_name = "Time")
 # extract_matches(z, i_name = "23", y_name = "Time", t_name = "Diet", c_name = "2")
+
+
+
+# equivalence between calculate_matches() and calculate_matches2()
+# Note: not generic, holds for k = 9. May be different for other k
+m <- calculate_matches(data, Time == 0 & Chick == 48, y_name = "weight", x_name = c("Time", "Diet"), k = 9)
+m2 <- calculate_matches2(data, data[543, ], subset = !rownames(data) %in% "543", y_name = "weight", x_name = c("Time", "Diet"), k = 9)
+
+test_that("calculate_matches() and calculate_matches2() return same matches", {
+  expect_equal(extract_matches(m), extract_matches(m2))
+})
+
