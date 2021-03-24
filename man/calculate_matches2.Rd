@@ -98,21 +98,21 @@ means of stratified predictive mean matching or by nearest neighbour matching.
   variability. The default option is to break ties randomly.
 }
 \examples{
-library("curvematching")
 data <- datasets::ChickWeight
-data[543, ]
+data[1, ]
 
-# find matches for observation in row 543 for outcome weight
-m <- calculate_matches(data, Time == 0 & Chick == 48, y_name = "weight", x_name = c("Time", "Diet"))
-m2 <- calculate_matches2(data[-543, ], data[543, ], y_name = "weight", x_name = c("Time", "Diet"))
+# find matches for observation in row 1
+m1 <- calculate_matches2(data, data[1, ], subset = !rownames(data) \%in\% "1",
+    y_name = "weight", x_name = c("Time", "Diet"))
 
-# row numbers of matched cases
-extract_matches(m)
-extract_matches(m2)
+# data of matched cases (may vary because of tie breaking)
+data[extract_matches(m1), ]
 
-# data of matched cases
-data[extract_matches(m), ]
+# without tie breaking, we pick the earlier rows (not recommended)
+m2 <- calculate_matches2(data, data[1, ], subset = !rownames(data) \%in\% "1",
+     y_name = "weight", x_name = c("Time", "Diet"), break_ties = FALSE)
 data[extract_matches(m2), ]
+
 }
 \references{
 van Buuren, S. (2014). \emph{Curve matching: A data-driven

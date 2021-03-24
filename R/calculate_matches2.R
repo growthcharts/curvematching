@@ -64,21 +64,21 @@
 #'   \emph{Flexible imputation of missing data}. Boca Raton, FL: Chapman &
 #'   Hall/CRC.
 #' @examples
-#' library("curvematching")
 #' data <- datasets::ChickWeight
-#' data[543, ]
+#' data[1, ]
 #'
-#' # find matches for observation in row 543 for outcome weight
-#' m <- calculate_matches(data, Time == 0 & Chick == 48, y_name = "weight", x_name = c("Time", "Diet"))
-#' m2 <- calculate_matches2(data[-543, ], data[543, ], y_name = "weight", x_name = c("Time", "Diet"))
+#' # find matches for observation in row 1
+#' m1 <- calculate_matches2(data, data[1, ], subset = !rownames(data) %in% "1",
+#'     y_name = "weight", x_name = c("Time", "Diet"))
 #'
-#' # row numbers of matched cases
-#' extract_matches(m)
-#' extract_matches(m2)
+#' # data of matched cases (may vary because of tie breaking)
+#' data[extract_matches(m1), ]
 #'
-#' # data of matched cases
-#' data[extract_matches(m), ]
+#' # without tie breaking, we pick the earlier rows (not recommended)
+#' m2 <- calculate_matches2(data, data[1, ], subset = !rownames(data) %in% "1",
+#'      y_name = "weight", x_name = c("Time", "Diet"), break_ties = FALSE)
 #' data[extract_matches(m2), ]
+#'
 #' @export
 calculate_matches2 <- function(data,
                                newdata,
@@ -138,7 +138,6 @@ calculate_matches2 <- function(data,
   # loop over target children
   l1 <- vector("list", nrow(newdata))
   names(l1) <- as.vector(unlist(select(newdata, .data$.row)))
-  # matches <- matrix(NA_real_, nrow = nrow(newdata), ncol = k)
   for (i in 1L:nrow(newdata)) {
     # define active case
     active <- slice(newdata, i)
