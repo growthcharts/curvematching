@@ -4,64 +4,64 @@
 #' The method finds persons similar to the target person, and learn the possible
 #' future course of growth from the realized curves of the matched individuals.
 #'
-#' The function finds \code{k} matches for an individual in the same data set by
+#' The function finds `k` matches for an individual in the same data set by
 #' means of stratified predictive mean matching or by nearest neighbour matching.
 #'
-#' @param data A \code{data.frame} or \code{tbl_df} with donor data. One row is
+#' @param data A `data.frame` or `tbl_df` with donor data. One row is
 #' one potential donor.
-#' @param newdata A \code{data.frame} or \code{tbl_df} with data of children for
+#' @param newdata A `data.frame` or `tbl_df` with data of children for
 #'  which we seek matches. Every row corresponds to one child.
 #' @param y_name A character vector containing the names of the dependent
-#'   variables in \code{data}.
+#'   variables in `data`.
 #' @param x_name A character vector containing the names of predictive variables
-#'   in \code{data} to will go into the linear part of the model.
+#'   in `data` to will go into the linear part of the model.
 #' @param e_name A character vector containing the names of the variables for
 #'   which the match should be exact.
 #' @param t_name A character vector containing the names of the treatment
-#'   variables in \code{data}. The current function will only fit the model to
-#'   only the first element of \code{t_name}.
+#'   variables in `data`. The current function will only fit the model to
+#'   only the first element of `t_name`.
 #' @param subset Logical expression defining the set of rows taken from
-#'   \code{data}. This subset is selected before any other calculations are
+#'   `data`. This subset is selected before any other calculations are
 #'   made, and this can be used to trim down the size of the data in which
 #'   matches are defined and sought.
-#' @param k Requested number of matches. The default is \code{k = 10}.
+#' @param k Requested number of matches. The default is `k = 10`.
 #' @param replace A logical that indicates whether to match with or without
-#'   replacement. The default is \code{FALSE}.
+#'   replacement. The default is `FALSE`.
 #' @param blend An integer value between 0 and 1 that indicates the blend
-#'   between predictive mean matching with replacement (\code{1}) and euclidian
-#'   distance matching (\code{0}). The default is \code{1}.
+#'   between predictive mean matching with replacement (`1`) and euclidian
+#'   distance matching (`0`). The default is `1`.
 #' @param kappa A numeric value that serves as the sensitivity parameter for the
 #'   inverse distance weighting. Used when drawing with replacement. The default
-#'   is \code{3}.
+#'   is `3`.
 #' @param break_ties A logical indicating whether ties should broken randomly.
-#'   The default (\code{TRUE}) breaks ties randomly.
+#'   The default (`TRUE`) breaks ties randomly.
 #' @param verbose A logical indicating whether diagnostic information should be
 #'   printed.
-#' @param \dots Arguments passed down to \code{match_pmm()}.
-#' @return An object of class \code{match_list} which can be post-processed by
-#'   the \code{extract_matches} function to extract the row numbers in
-#'   \code{data} of the matched children. The length of the list will be always
-#'   equal to \code{m} if \code{replace == TRUE}, but may be shorter if
-#'   \code{replace == FALSE} if the donors are exhausted. The length is zero if
+#' @param \dots Arguments passed down to `match_pmm()`.
+#' @return An object of class `match_list` which can be post-processed by
+#'   the `extract_matches` function to extract the row numbers in
+#'   `data` of the matched children. The length of the list will be always
+#'   equal to `m` if `replace == TRUE`, but may be shorter if
+#'   `replace == FALSE` if the donors are exhausted. The length is zero if
 #'   no matches can be found.
 #' @author Stef van Buuren 2021
 #' @details
-#'   The procedure search for matches in \code{data} for each row
-#'   in \code{newdata}.
-#'   Note that if \code{x_name} contains one or more factors, then it is
+#'   The procedure search for matches in `data` for each row
+#'   in `newdata`.
+#'   Note that if `x_name` contains one or more factors, then it is
 #'   possible that the factor level of the target case is unique among all
 #'   potential donors. In that case, the model can still be fit, but prediction
 #'   will fail, and hence no matches will be found.
 #'
-#'   If \code{break_ties} is \code{FALSE}, the function returns the first \code{nmatch}
-#'   matches as they appear in the order of \code{data}. This method overuses
+#'   If `break_ties` is `FALSE`, the function returns the first `nmatch`
+#'   matches as they appear in the order of `data`. This method overuses
 #'   the first part of the data if there are ties, and hence may underestimate
 #'   variability. The default option is to break ties randomly.
 #'
-#' @references van Buuren, S. (2014). \emph{Curve matching: A data-driven
-#'   technique to improve individual prediction of childhood growth}. Annals of
+#' @references van Buuren, S. (2014). *Curve matching: A data-driven
+#'   technique to improve individual prediction of childhood growth*. Annals of
 #'   Nutrition & Metabolism, 65(3), 227-233. van Buuren, S. (2012).
-#'   \emph{Flexible imputation of missing data}. Boca Raton, FL: Chapman &
+#'   *Flexible imputation of missing data*. Boca Raton, FL: Chapman &
 #'   Hall/CRC.
 #' @examples
 #' data <- datasets::ChickWeight

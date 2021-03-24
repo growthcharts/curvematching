@@ -69,11 +69,11 @@ printed.}
 }
 \value{
 An object of class \code{match_list} which can be post-processed by
-  the \code{extract_matches} function to extract the row numbers in
-  \code{data} of the matched children. The length of the list will be always
-  equal to \code{m} if \code{replace == TRUE}, but may be shorter if
-  \code{replace == FALSE} if the donors are exhausted. The length is zero if
-  no matches can be found.
+the \code{extract_matches} function to extract the row numbers in
+\code{data} of the matched children. The length of the list will be always
+equal to \code{m} if \code{replace == TRUE}, but may be shorter if
+\code{replace == FALSE} if the donors are exhausted. The length is zero if
+no matches can be found.
 }
 \description{
 Curve matching is a technology that aims to predict individual growth curves.
@@ -84,18 +84,17 @@ future course of growth from the realized curves of the matched individuals.
 The function finds \code{k} matches for an individual in the same data set by
 means of stratified predictive mean matching or by nearest neighbour matching.
 
+The procedure search for matches in \code{data} for each row
+in \code{newdata}.
+Note that if \code{x_name} contains one or more factors, then it is
+possible that the factor level of the target case is unique among all
+potential donors. In that case, the model can still be fit, but prediction
+will fail, and hence no matches will be found.
 
-  The procedure search for matches in \code{data} for each row
-  in \code{newdata}.
-  Note that if \code{x_name} contains one or more factors, then it is
-  possible that the factor level of the target case is unique among all
-  potential donors. In that case, the model can still be fit, but prediction
-  will fail, and hence no matches will be found.
-
-  If \code{break_ties} is \code{FALSE}, the function returns the first \code{nmatch}
-  matches as they appear in the order of \code{data}. This method overuses
-  the first part of the data if there are ties, and hence may underestimate
-  variability. The default option is to break ties randomly.
+If \code{break_ties} is \code{FALSE}, the function returns the first \code{nmatch}
+matches as they appear in the order of \code{data}. This method overuses
+the first part of the data if there are ties, and hence may underestimate
+variability. The default option is to break ties randomly.
 }
 \examples{
 data <- datasets::ChickWeight
@@ -116,10 +115,10 @@ data[extract_matches(m2), ]
 }
 \references{
 van Buuren, S. (2014). \emph{Curve matching: A data-driven
-  technique to improve individual prediction of childhood growth}. Annals of
-  Nutrition & Metabolism, 65(3), 227-233. van Buuren, S. (2012).
-  \emph{Flexible imputation of missing data}. Boca Raton, FL: Chapman &
-  Hall/CRC.
+technique to improve individual prediction of childhood growth}. Annals of
+Nutrition & Metabolism, 65(3), 227-233. van Buuren, S. (2012).
+\emph{Flexible imputation of missing data}. Boca Raton, FL: Chapman &
+Hall/CRC.
 }
 \author{
 Stef van Buuren 2021

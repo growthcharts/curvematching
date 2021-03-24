@@ -24,3 +24,4 @@ VignetteBuilder: knitr
 Acknowledgement: Development of this package was kindly supported by the HBGDki
     program of the Bill & Melinda Gates Foundation
 RoxygenNote: 7.1.1
+Roxygen: list(markdown = TRUE)
