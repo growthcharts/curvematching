@@ -1,3 +1,9 @@
+# curvematching 0.13.0
+
+* Adds GHA `R-CMD-check`
+* Merges the `bdsreader` branch so as to remove `minihealth`
+* Relocates repo to the `growthchart` organisation
+
 # curvematching 0.12.0
 
 * Adds blended distance matching function `match_bmd()`, which generalises the distance metric used for matching
