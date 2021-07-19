@@ -1,5 +1,5 @@
 #' @importFrom dplyr    %>% all_of bind_rows do filter group_by group_size
-#'                      mutate mutate_ mutate_if n n_groups select slice
+#'                      mutate mutate_if n n_groups select slice
 #'                      summarise ungroup
 #' @importFrom lazyeval interp
 #' @importFrom rlang    .data quo sym enexpr
