@@ -1,3 +1,8 @@
+# curvematching 0.13.1
+
+* Removes superfluous mutate_() imports
+* Removes superfluous LazyData in DESCRIPTION
+
 # curvematching 0.13.0
 
 * Adds GHA `R-CMD-check`
