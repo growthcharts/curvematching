@@ -8,7 +8,7 @@ Description: Personalised Prediction by Matching Invididuals.
 Depends:
     R (>= 2.10)
 Imports:
-    dplyr,
+    dplyr (>= 1.0.10),
     lazyeval,
     rlang,
     stats,

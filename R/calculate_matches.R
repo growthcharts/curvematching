@@ -159,11 +159,11 @@ calculate_matches <- function(data,
   # select active variables
   sys <- c(".row", ".target", ".seqno")
   var_names <- unique(c(sys, y_name, x_name, e_name, t_name))
-  data <- select(data, !!var_names)
+  data <- select(data, all_of(var_names))
 
   # loop over tgts
   l1 <- vector("list", nt)
-  names(l1) <- as.vector(unlist(select(filter(data, .data$.target), .data$.row)))
+  names(l1) <- as.vector(unlist(select(filter(data, .data$.target), ".row")))
   for (i in 1:nt) {
     # FIXME: Is it really OK to overwrite data? SvB 20200319
     # define active case

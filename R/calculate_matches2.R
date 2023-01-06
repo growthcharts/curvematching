@@ -134,15 +134,15 @@ calculate_matches2 <- function(data,
   data <- data %>%
     mutate(.row = 1L:n()) %>%
     filter({{ subset }}) %>%
-    select(all_of(c(".row", !!vars)))
+    select(all_of(c(".row", vars)))
 
   newdata <- newdata %>%
     mutate(.row = 1L:n()) %>%
-    select(all_of(c(".row", !!vars)))
+    select(all_of(c(".row", vars)))
 
   # loop over target children
   l1 <- vector("list", nrow(newdata))
-  names(l1) <- as.vector(unlist(select(newdata, .data$.row)))
+  names(l1) <- as.vector(unlist(select(newdata, ".row")))
   for (i in 1L:nrow(newdata)) {
     # define active case
     active <- slice(newdata, i)
