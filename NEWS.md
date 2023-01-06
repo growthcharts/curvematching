@@ -1,3 +1,9 @@
+# curvematching 0.14.0
+
+* `tidyselect` 1.2.0 grammar for the `dplyr::select()` function now forbids `.data$varname` arguments. Update various function to remove deprecation messages and errors.
+* Uses the more lenient `any_of()` to prevent hard errors.
+
+
 # curvematching 0.13.1
 
 * Removes superfluous mutate_() imports
