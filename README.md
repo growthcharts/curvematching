@@ -5,7 +5,7 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/growthcharts/curvematching/workflows/R-CMD-check/badge.svg)](https://github.com/growthcharts/curvematching/actions)
+[![R-CMD-check](https://github.com/growthcharts/curvematching/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/growthcharts/curvematching/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of `curvematching` is to …
