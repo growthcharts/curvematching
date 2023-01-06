@@ -130,15 +130,17 @@ calculate_matches2 <- function(data,
     names(data)
   )
 
+  rvars <- c(".row", vars)
+
   # preserve donor row number before subset
   data <- data %>%
     mutate(.row = 1L:n()) %>%
     filter({{ subset }}) %>%
-    select(all_of(c(".row", vars)))
+    select(any_of(rvars))
 
   newdata <- newdata %>%
     mutate(.row = 1L:n()) %>%
-    select(all_of(c(".row", vars)))
+    select(any_of(rvars))
 
   # loop over target children
   l1 <- vector("list", nrow(newdata))

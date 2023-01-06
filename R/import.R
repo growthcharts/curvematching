@@ -1,4 +1,4 @@
-#' @importFrom dplyr    %>% all_of bind_rows do filter group_by group_size
+#' @importFrom dplyr    %>% all_of any_of bind_rows do filter group_by group_size
 #'                      mutate mutate_if n n_groups select slice
 #'                      summarise ungroup
 #' @importFrom lazyeval interp
